@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>需求雷达 - {{ date }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header h1 { font-size: 1.5rem; font-weight: 600; color: #58a6ff; }
+    .header .meta {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #8b949e;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: #484f58; }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .badge {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .badge-10, .badge-9 { background: #238636; color: #fff; }
+    .badge-8, .badge-7 { background: #1f6feb; color: #fff; }
+    .badge-6, .badge-5 { background: #9e6a03; color: #fff; }
+    .card-title { font-size: 1.15rem; font-weight: 600; color: #e6edf3; }
+    .card-meta {
+      font-size: 0.85rem;
+      color: #8b949e;
+      margin: 0.5rem 0;
+    }
+    .card-meta span { margin-right: 1rem; }
+    .source-tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background: #21262d;
+      color: #8b949e;
+    }
+    .score-reason {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #8b949e;
+      cursor: pointer;
+      user-select: none;
+    }
+    .score-reason::before { content: "▶ "; font-size: 0.7rem; }
+    .score-reason.expanded::before { content: "▼ "; }
+    .score-reason-content {
+      display: none;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #0d1117;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .score-reason.expanded .score-reason-content { display: block; }
+    .link-btn {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      background: #238636;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .link-btn:hover { background: #2ea043; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>需求雷达</h1>
+    <div class="meta">{{ date }} · 抓取 {{ total }} 条 · 有效需求 {{ count }} 条</div>
+  </header>
+  <main class="container">
+    {% for item in items %}
+    <article class="card">
+      <div class="card-header">
+        <span class="badge badge-{{ item.commercial_score }}">{{ item.commercial_score }}</span>
+        <div style="flex:1">
+          <h2 class="card-title">{{ item.demand_summary }}</h2>
+          <div class="card-meta">
+            <span class="source-tag">{{ item.raw.source }}</span>
+            <span>热度 {{ item.raw.score }}</span>
+            <span>评论 {{ item.raw.comments }}</span>
+          </div>
+        </div>
+      </div>
+      <p><strong>目标用户:</strong> {{ item.target_user }}</p>
+      <p><strong>产品思路:</strong> {{ item.product_idea }}</p>
+      <div class="score-reason" onclick="this.classList.toggle('expanded')">
+        评分理由
+        <div class="score-reason-content">{{ item.score_reason }}</div>
+      </div>
+      <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn">原文链接</a>
+    </article>
+    {% endfor %}
+  </main>
+</body>
+</html>
