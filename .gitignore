@@ -1,4 +1,4 @@
-# 环境变量与密钥，勿提交
+# Secrets
 .env
 .env.local
 .env.*.local
@@ -14,9 +14,9 @@ venv/
 *.egg-info/
 .eggs/
 
-# 输出与本地
-output/*.html
-!output/.gitkeep
+# Output (generated reports)
+output/
+*.html
 
 # IDE / OS
 .idea/

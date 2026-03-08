@@ -9,7 +9,7 @@ async def scrape_g2() -> list[RawItem]:
     try:
         from playwright.async_api import async_playwright
     except ImportError:
-        print("[G2] playwright 未安装，跳过。运行: pip install playwright && playwright install chromium")
+        print("[G2] playwright not installed, skipping. Run: pip install playwright && playwright install chromium")
         return []
 
     items: list[RawItem] = []
@@ -82,7 +82,7 @@ async def scrape_g2() -> list[RawItem]:
                             pass
                     await page.close()
                 except Exception as e:
-                    print(f"[G2] 分类 {cat} 抓取失败: {e}")
+                    print(f"[G2] category {cat} failed: {e}")
         finally:
             await browser.close()
 

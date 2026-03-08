@@ -1,137 +1,512 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>需求雷达 - {{ date }}</title>
+  <title>Demand Radar - {{ date }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0F0F0F;
+      --card: #161616;
+      --border: #222;
+      --text-primary: #F0F0F0;
+      --text-secondary: #999;
+      --text-muted: #888;
+      --accent: #4F6EF7;
+      --accent-dim: rgba(79,110,247,0.1);
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
-      line-height: 1.6;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      background: var(--bg);
+      color: var(--text-primary);
       min-height: 100vh;
     }
     .header {
-      background: #161b22;
-      border-bottom: 1px solid #30363d;
-      padding: 1.5rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .header h1 { font-size: 1.5rem; font-weight: 600; color: #58a6ff; }
-    .header .meta {
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-      color: #8b949e;
-    }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-    .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-      transition: border-color 0.2s;
-    }
-    .card:hover { border-color: #484f58; }
-    .card-header {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 28px 20px 20px;
       display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .badge {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .header-stats {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+    .header-controls { display: flex; align-items: center; gap: 14px; }
+    .filter-fav-btn, .lang-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .filter-fav-btn:hover, .lang-btn:hover { color: var(--text-primary); }
+    .lang-btn {
+      border-left: 1px solid #333;
+      padding-left: 14px;
+    }
+    .container { max-width: 680px; margin: 0 auto; padding: 0 20px 48px; }
+
+    .card {
+      position: relative;
+      background: var(--card);
+      border-left: 4px solid var(--border);
+      border-bottom: 1px solid #1a1a1a;
+      transition: border-left-color 0.2s;
+    }
+    .card.card-hidden { display: none !important; }
+    .card.score-8 { border-left-color: #4F6EF7; }
+    .card.score-7 { border-left-color: #6EE7B7; }
+    .card.score-6 { border-left-color: #F59E0B; }
+    .card.score-5 { border-left-color: #444; }
+
+    .card-summary {
+      display: block;
+      padding: 14px 20px 14px 16px;
+      cursor: pointer;
+      min-height: 80px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .card-summary:focus { outline: none; }
+    .card-row1 {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.95rem;
+      gap: 10px;
+      margin-bottom: 6px;
     }
-    .badge-10, .badge-9 { background: #238636; color: #fff; }
-    .badge-8, .badge-7 { background: #1f6feb; color: #fff; }
-    .badge-6, .badge-5 { background: #9e6a03; color: #fff; }
-    .card-title { font-size: 1.15rem; font-weight: 600; color: #e6edf3; }
-    .card-meta {
-      font-size: 0.85rem;
-      color: #8b949e;
-      margin: 0.5rem 0;
+    .card-dot {
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
     }
-    .card-meta span { margin-right: 1rem; }
-    .source-tag {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      background: #21262d;
-      color: #8b949e;
+    .card-dot.s8 { background: #4F6EF7; }
+    .card-dot.s7 { background: #6EE7B7; }
+    .card-dot.s6 { background: #F59E0B; }
+    .card-dot.s5 { background: #444; }
+    .card-title-wrap { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #CCCCCC;
+      line-height: 1.3;
     }
-    .score-reason {
-      margin-top: 0.75rem;
-      font-size: 0.9rem;
-      color: #8b949e;
+    .card-expand-icon {
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #444;
+      transition: color 0.2s;
+      pointer-events: none;
+    }
+    .card:hover .card-expand-icon { color: #888; }
+    .card.expanded .card-expand-icon { color: #888; }
+    .card.expanded .card-expand-icon::before { content: "▲"; }
+    .card:not(.expanded) .card-expand-icon::before { content: "▼"; }
+    .fav-btn {
+      flex-shrink: 0;
+      font-size: 18px;
+      line-height: 1;
+      color: var(--text-muted);
+      background: none;
+      border: none;
       cursor: pointer;
-      user-select: none;
+      padding: 2px 6px;
     }
-    .score-reason::before { content: "▶ "; font-size: 0.7rem; }
-    .score-reason.expanded::before { content: "▼ "; }
-    .score-reason-content {
-      display: none;
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      background: #0d1117;
+    .fav-btn:hover { color: var(--text-secondary); }
+    .fav-btn.fav-active { color: #F59E0B; }
+    .fav-btn.pop { animation: starPop 0.3s ease; }
+    @keyframes starPop {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+    }
+    .card-row2 {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .card-row2 span { margin-right: 12px; }
+    .card-summary-text {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out;
+    }
+    .card.expanded .card-detail {
+      max-height: 1200px;
+      transition: max-height 0.4s ease-in;
+    }
+    .card-detail-inner {
+      padding: 0 20px 20px 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .target-user-tag {
+      font-size: 12px;
+      font-weight: 400;
+      color: #BBBBBB;
+      margin-bottom: 12px;
+    }
+    .product-idea {
+      font-size: 15px;
+      font-weight: 400;
+      color: #BBBBBB;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      margin-bottom: 12px;
+    }
+    .score-grid-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .score-grid-label { color: #AAAAAA; min-width: 4em; }
+    .score-grid-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .score-grid-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+    .score-grid-value { color: var(--text-secondary); min-width: 2.5em; text-align: right; }
+    .score-reason-text {
+      font-size: 12px;
+      color: #AAAAAA;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .exec-plan-block { margin-bottom: 14px; }
+    .exec-plan-label {
+      font-size: 12px;
+      color: #AAAAAA;
+      margin-bottom: 6px;
+    }
+    .exec-plan-content {
+      font-size: 15px;
+      color: #BBBBBB;
+      line-height: 1.6;
+    }
+    .build-days { margin-bottom: 6px; }
+    .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .tool-tag {
+      font-size: 12px;
+      padding: 5px 10px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      background: #2a2a2a;
+      color: #AAAAAA;
     }
-    .score-reason.expanded .score-reason-content { display: block; }
+    .tool-tag .tool-name { font-weight: 600; }
+    .tool-tag.tool-claude-code { background: #1a3a2a; color: #6EE7B7; }
+    .tool-tag.tool-cursor { background: #1a2a3a; color: #60A5FA; }
+    .tool-tag.tool-gemini { background: #2a1a3a; color: #C084FC; }
+    .tool-tag.tool-bolt-new { background: #3a2a1a; color: #FB923C; }
+    .tool-tag.tool-firecrawl { background: #3a1a1a; color: #F87171; }
+    .tool-tag.tool-v0 { background: #1a1a3a; color: #818CF8; }
+    .tool-tag.tool-replit { background: #1a3a3a; color: #34D399; }
+    .tool-tag.tool-windsurf { background: #2a3a1a; color: #A3E635; }
+    .cost-estimate { margin: 6px 0; color: #AAAAAA; }
+    .biggest-risk { margin-top: 6px; color: #AAAAAA; }
     .link-btn {
       display: inline-block;
-      margin-top: 0.75rem;
-      padding: 0.4rem 0.8rem;
-      background: #238636;
-      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
       text-decoration: none;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      transition: background 0.2s;
     }
-    .link-btn:hover { background: #2ea043; }
+    .link-btn:hover { text-decoration: underline; }
+    .card-hint {
+      text-align: center;
+      font-size: 12px;
+      color: #444;
+      padding: 8px 0 16px;
+    }
+
   </style>
 </head>
 <body>
   <header class="header">
-    <h1>需求雷达</h1>
-    <div class="meta">{{ date }} · 抓取 {{ total }} 条 · 有效需求 {{ count }} 条</div>
+    <div>
+      <h1 data-i18n="title">Demand Radar</h1>
+      <div class="header-stats">{{ date }} · <span data-i18n="fetched">Fetched</span> {{ total }}<span data-i18n="item-suffix"></span> · <span data-i18n="qualified">Qualified</span> {{ count }}<span data-i18n="item-suffix"></span> · <span data-i18n="saved-label">Saved</span> <span id="fav-count">0</span><span data-i18n="item-suffix"></span></div>
+    </div>
+    <div class="header-controls">
+      <button type="button" class="filter-fav-btn" id="filter-fav-btn">Saved Only</button>
+      <button type="button" class="lang-btn" id="lang-btn">中文</button>
+    </div>
   </header>
   <main class="container">
     {% for item in items %}
-    <article class="card">
-      <div class="card-header">
-        <span class="badge badge-{{ item.commercial_score }}">{{ item.commercial_score }}</span>
-        <div style="flex:1">
-          <h2 class="card-title">{{ item.demand_summary }}</h2>
-          <div class="card-meta">
-            <span class="source-tag">{{ item.raw.source }}</span>
-            <span>热度 {{ item.raw.score }}</span>
-            <span>评论 {{ item.raw.comments }}</span>
+    {% set sc = item.commercial_score %}
+    {% set score_class = 8 if sc >= 8 else (7 if sc >= 7 else (6 if sc >= 6 else 5)) %}
+    <article class="card score-{{ score_class }}" data-url="{{ item.raw.url }}" data-score="{{ sc }}">
+      <div class="card-summary" tabindex="0" role="button" aria-expanded="false">
+        <div class="card-row1">
+          <span class="card-dot s{{ score_class }}" aria-hidden="true"></span>
+          <div class="card-title-wrap">
+            <h2 class="card-title">{{ item.demand_summary }}</h2>
           </div>
+          <span class="card-expand-icon" aria-hidden="true"></span>
+          <button type="button" class="fav-btn" data-url="{{ item.raw.url }}" aria-label="Save" title="Save">☆</button>
+        </div>
+        <div class="card-row2">
+          <span>{{ item.raw.source }}</span>
+          <span>score {{ item.raw.score }}</span>
+          <span>comments {{ item.raw.comments }}</span>
+        </div>
+        <div class="card-summary-text">{{ item.demand_summary }}</div>
+      </div>
+      <div class="card-detail">
+        <div class="card-detail-inner">
+          <div class="target-user-tag"><span data-i18n="target-user">Target User</span>: {{ item.target_user }}</div>
+          <p class="product-idea">{{ item.product_idea }}</p>
+          <div class="score-grid">
+            {% set sd = item.score_detail or {} %}
+            {% set pl = (sd.get('pain_level', 0) or 0) %}
+            {% set ps = (sd.get('payment_signal', 0) or 0) %}
+            {% set ex = (sd.get('executability', 0) or 0) %}
+            {% set re = (sd.get('reach', 0) or 0) %}
+            <div class="score-grid-item">
+              <span class="score-grid-label" data-i18n="pain-level">Pain Level</span>
+              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (pl / 3.0 * 100) | round(0) }}%"></div></div>
+              <span class="score-grid-value">{{ pl }}/3</span>
+            </div>
+            <div class="score-grid-item">
+              <span class="score-grid-label" data-i18n="pay-signal">Pay Signal</span>
+              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ps / 3.0 * 100) | round(0) }}%"></div></div>
+              <span class="score-grid-value">{{ ps }}/3</span>
+            </div>
+            <div class="score-grid-item">
+              <span class="score-grid-label" data-i18n="buildability">Buildability</span>
+              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ex / 2.0 * 100) | round(0) }}%"></div></div>
+              <span class="score-grid-value">{{ ex }}/2</span>
+            </div>
+            <div class="score-grid-item">
+              <span class="score-grid-label" data-i18n="reach">Reach</span>
+              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (re / 2.0 * 100) | round(0) }}%"></div></div>
+              <span class="score-grid-value">{{ re }}/2</span>
+            </div>
+          </div>
+          <div class="score-reason-text">{{ item.score_reason }}</div>
+          {% if item.build_days or (item.tool_plan and item.tool_plan|length > 0) or item.cost_estimate or item.biggest_risk %}
+          <div class="exec-plan-block">
+            <div class="exec-plan-label" data-i18n="build-plan">Build Plan</div>
+            <div class="exec-plan-content">
+              {% if item.build_days %}<div class="build-days"><span data-i18n="eta">ETA</span>: {{ item.build_days }}</div>{% endif %}
+              {% if item.tool_plan and item.tool_plan|length > 0 %}
+              <div class="tool-tags">
+                {% for entry in item.tool_plan %}
+                {% set tool_slug = (entry.tool | lower | replace(' ', '-') | replace('.', '-')) %}
+                <span class="tool-tag tool-{{ tool_slug }}"><span class="tool-name">{{ entry.tool }}</span>: {{ entry.role }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+              {% if item.cost_estimate %}<div class="cost-estimate"><span data-i18n="cost">Cost</span>: {{ item.cost_estimate }}</div>{% endif %}
+              {% if item.biggest_risk %}<div class="biggest-risk"><span data-i18n="risk">Risk</span>: {{ item.biggest_risk }}</div>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+          <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn" data-i18n="source">Source</a>
         </div>
       </div>
-      <p><strong>目标用户:</strong> {{ item.target_user }}</p>
-      <p><strong>产品思路:</strong> {{ item.product_idea }}</p>
-      <div class="score-reason" onclick="this.classList.toggle('expanded')">
-        评分理由
-        <div class="score-reason-content">{{ item.score_reason }}</div>
-      </div>
-      <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn">原文链接</a>
     </article>
+    {% if loop.first %}<div class="card-hint" id="card-hint" data-i18n="hint">Click to expand</div>{% endif %}
     {% endfor %}
   </main>
+  <script>
+    (function() {
+      var KEY = "demand-radar-favorites";
+      var currentLang = "en";
+      var showFavOnly = false;
+
+      var LANG = {
+        en: {
+          title: "Demand Radar",
+          fetched: "Fetched",
+          "item-suffix": "",
+          qualified: "Qualified",
+          "saved-label": "Saved",
+          "filter-btn-off": "Saved Only",
+          "filter-btn-on": "Show All",
+          "target-user": "Target User",
+          "pain-level": "Pain Level",
+          "pay-signal": "Pay Signal",
+          buildability: "Buildability",
+          reach: "Reach",
+          "build-plan": "Build Plan",
+          eta: "ETA",
+          cost: "Cost",
+          risk: "Risk",
+          source: "Source",
+          hint: "Click to expand",
+          "lang-btn": "中文"
+        },
+        zh: {
+          title: "需求雷达",
+          fetched: "抓取",
+          "item-suffix": "条",
+          qualified: "有效需求",
+          "saved-label": "已收藏",
+          "filter-btn-off": "只看收藏",
+          "filter-btn-on": "显示全部",
+          "target-user": "目标用户",
+          "pain-level": "痛苦烈度",
+          "pay-signal": "付费意愿",
+          buildability: "可执行性",
+          reach: "获客渠道",
+          "build-plan": "执行方案",
+          eta: "预计天数",
+          cost: "成本",
+          risk: "风险",
+          source: "原文链接",
+          hint: "点击展开",
+          "lang-btn": "EN"
+        }
+      };
+
+      function getFavorites() {
+        try {
+          var raw = localStorage.getItem(KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) { return []; }
+      }
+      function setFavorites(arr) {
+        localStorage.setItem(KEY, JSON.stringify(arr));
+      }
+      function updateFavCount() {
+        var n = getFavorites().length;
+        var el = document.getElementById("fav-count");
+        if (el) el.textContent = n;
+      }
+      function applyFavState() {
+        var favs = getFavorites();
+        document.querySelectorAll(".fav-btn").forEach(function(btn) {
+          var url = btn.getAttribute("data-url");
+          if (favs.indexOf(url) !== -1) {
+            btn.classList.add("fav-active");
+            btn.textContent = "★";
+          } else {
+            btn.classList.remove("fav-active");
+            btn.textContent = "☆";
+          }
+        });
+        updateFavCount();
+      }
+      function filterView(favOnly) {
+        var favs = getFavorites();
+        document.querySelectorAll(".card").forEach(function(card) {
+          var url = card.getAttribute("data-url");
+          if (favOnly) card.classList.toggle("card-hidden", favs.indexOf(url) === -1);
+          else card.classList.remove("card-hidden");
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        applyFavState();
+        var hint = document.getElementById("card-hint");
+        if (hint) setTimeout(function() { hint.style.display = "none"; }, 5000);
+
+        var filterBtn = document.getElementById("filter-fav-btn");
+        var langBtn = document.getElementById("lang-btn");
+
+        function applyLang(lang) {
+          currentLang = lang;
+          var t = LANG[lang];
+          document.documentElement.lang = lang === "en" ? "en" : "zh-CN";
+          document.querySelectorAll("[data-i18n]").forEach(function(el) {
+            var key = el.getAttribute("data-i18n");
+            if (key in t) el.textContent = t[key];
+          });
+          if (filterBtn) filterBtn.textContent = showFavOnly ? t["filter-btn-on"] : t["filter-btn-off"];
+          if (langBtn) langBtn.textContent = t["lang-btn"];
+        }
+
+        if (filterBtn) {
+          filterBtn.addEventListener("click", function() {
+            showFavOnly = !showFavOnly;
+            filterView(showFavOnly);
+            filterBtn.textContent = showFavOnly ? LANG[currentLang]["filter-btn-on"] : LANG[currentLang]["filter-btn-off"];
+          });
+        }
+        if (langBtn) {
+          langBtn.addEventListener("click", function() {
+            applyLang(currentLang === "en" ? "zh" : "en");
+          });
+        }
+
+        document.querySelectorAll(".card-summary").forEach(function(summary) {
+          var icon = summary.querySelector(".card-expand-icon");
+          if (icon) icon.setAttribute("aria-hidden", "true");
+          summary.addEventListener("click", function(e) {
+            if (e.target.classList.contains("fav-btn")) return;
+            var card = summary.closest(".card");
+            if (card) {
+              var open = card.classList.toggle("expanded");
+              summary.setAttribute("aria-expanded", open);
+            }
+          });
+        });
+
+        document.querySelectorAll(".fav-btn").forEach(function(btn) {
+          btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var url = btn.getAttribute("data-url");
+            var favs = getFavorites();
+            var i = favs.indexOf(url);
+            if (i === -1) favs.push(url);
+            else favs.splice(i, 1);
+            setFavorites(favs);
+            var isFav = favs.indexOf(url) !== -1;
+            btn.classList.toggle("fav-active", isFav);
+            btn.textContent = isFav ? "★" : "☆";
+            btn.classList.add("pop");
+            setTimeout(function() { btn.classList.remove("pop"); }, 300);
+            updateFavCount();
+            if (showFavOnly) filterView(true);
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

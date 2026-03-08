@@ -6,13 +6,13 @@ from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_UA
 
 def scrape_reddit() -> list[RawItem]:
     if not REDDIT_CLIENT_ID or not REDDIT_CLIENT_SECRET:
-        print("[Reddit] 未配置 REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET，跳过")
+        print("[Reddit] REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET not set, skipping")
         return []
 
     try:
         import praw
     except ImportError:
-        print("[Reddit] praw 未安装，跳过")
+        print("[Reddit] praw not installed, skipping")
         return []
 
     items: list[RawItem] = []
@@ -25,7 +25,7 @@ def scrape_reddit() -> list[RawItem]:
             user_agent=REDDIT_UA,
         )
     except Exception as e:
-        print(f"[Reddit] 初始化失败: {e}")
+        print(f"[Reddit] init failed: {e}")
         return []
 
     # r/SomebodyMakeThis, hot, 30
@@ -45,7 +45,7 @@ def scrape_reddit() -> list[RawItem]:
                 )
             )
     except Exception as e:
-        print(f"[Reddit] r/SomebodyMakeThis 抓取失败: {e}")
+        print(f"[Reddit] r/SomebodyMakeThis scrape failed: {e}")
 
     # r/entrepreneur 搜索 "I wish there was", 20
     try:
@@ -66,7 +66,7 @@ def scrape_reddit() -> list[RawItem]:
                 )
             )
     except Exception as e:
-        print(f"[Reddit] r/entrepreneur 搜索失败: {e}")
+        print(f"[Reddit] r/entrepreneur search failed: {e}")
 
     # r/smallbusiness 搜索 "wish there was a tool", 15
     try:
@@ -87,7 +87,7 @@ def scrape_reddit() -> list[RawItem]:
                 )
             )
     except Exception as e:
-        print(f"[Reddit] r/smallbusiness 搜索失败: {e}")
+        print(f"[Reddit] r/smallbusiness search failed: {e}")
 
     # r/freelance 搜索 "automate", 15
     try:
@@ -108,6 +108,6 @@ def scrape_reddit() -> list[RawItem]:
                 )
             )
     except Exception as e:
-        print(f"[Reddit] r/freelance 搜索失败: {e}")
+        print(f"[Reddit] r/freelance search failed: {e}")
 
     return items

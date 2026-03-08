@@ -1,81 +1,99 @@
-"""需求搜集器主入口"""
+"""Demand Radar — main entry point"""
 import asyncio
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from config import MOONSHOT_API_KEY
+from config import DEEPSEEK_API_KEY, MOONSHOT_API_KEY
 from processor.cleaner import clean, deduplicate
 from processor.ai_filter import filter_demands
 from reporter.generator import generate_report
 from scrapers.g2 import scrape_g2
 from scrapers.hn import scrape_hn
+from scrapers.indiehackers import scrape_indiehackers
+from scrapers.producthunt import scrape_producthunt
 from scrapers.reddit import scrape_reddit
 
 
 async def run():
     if not MOONSHOT_API_KEY:
-        print("[启动] 未配置 MOONSHOT_API_KEY，AI 过滤将跳过")
+        print("[startup] MOONSHOT_API_KEY not set, AI filtering will be skipped")
+    if not DEEPSEEK_API_KEY:
+        print("[startup] DEEPSEEK_API_KEY not set, AI scoring will be skipped")
     start = time.perf_counter()
     all_items = []
 
-    # 抓取
-    print("=== 阶段 1: 抓取 ===")
+    # Scraping
+    print("=== Stage 1: Scraping ===")
     try:
         hn_items = scrape_hn()
-        print(f"  [HN] 抓取 {len(hn_items)} 条")
+        print(f"  [HN] fetched {len(hn_items)} items")
         all_items.extend(hn_items)
     except Exception as e:
-        print(f"  [HN] 失败: {e}")
+        print(f"  [HN] failed: {e}")
 
     try:
         reddit_items = scrape_reddit()
-        print(f"  [Reddit] 抓取 {len(reddit_items)} 条")
+        print(f"  [Reddit] fetched {len(reddit_items)} items")
         all_items.extend(reddit_items)
     except Exception as e:
-        print(f"  [Reddit] 失败: {e}")
+        print(f"  [Reddit] failed: {e}")
 
     try:
         g2_items = await scrape_g2()
-        print(f"  [G2] 抓取 {len(g2_items)} 条")
+        print(f"  [G2] fetched {len(g2_items)} items")
         all_items.extend(g2_items)
     except Exception as e:
-        print(f"  [G2] 失败: {e}")
+        print(f"  [G2] failed: {e}")
+
+    try:
+        ph_items = scrape_producthunt()
+        print(f"  [Product Hunt] fetched {len(ph_items)} items")
+        all_items.extend(ph_items)
+    except Exception as e:
+        print(f"  [Product Hunt] failed: {e}")
+
+    try:
+        ih_items = scrape_indiehackers()
+        print(f"  [IndieHackers] fetched {len(ih_items)} items")
+        all_items.extend(ih_items)
+    except Exception as e:
+        print(f"  [IndieHackers] failed: {e}")
 
     total_raw = len(all_items)
-    print(f"  抓取总数: {total_raw}")
+    print(f"  total fetched: {total_raw}")
 
     if not all_items:
-        print("无数据，退出")
+        print("No data, exiting")
         return
 
-    # 去重
-    print("\n=== 阶段 2: 去重 ===")
+    # Deduplication
+    print("\n=== Stage 2: Deduplication ===")
     items = deduplicate(all_items)
-    print(f"  去重后: {len(items)} 条")
+    print(f"  after dedup: {len(items)} items")
 
-    # 清洗
+    # Cleaning
     items = clean(items)
-    print(f"  清洗后: {len(items)} 条")
+    print(f"  after clean: {len(items)} items")
 
     if not items:
-        print("清洗后无数据，退出")
+        print("No data after cleaning, exiting")
         return
 
-    # AI 过滤
-    print("\n=== 阶段 3: AI 过滤 ===")
+    # AI filtering
+    print("\n=== Stage 3: AI Filtering ===")
     with ThreadPoolExecutor(max_workers=5) as executor:
         demands = filter_demands(items, executor)
-    print(f"  有效需求: {len(demands)} 条")
+    print(f"  qualified demands: {len(demands)}")
 
-    # 生成报告
-    print("\n=== 阶段 4: 生成报告 ===")
+    # Report generation
+    print("\n=== Stage 4: Report Generation ===")
     output_dir = Path(__file__).parent / "output"
     report_path = generate_report(demands, total_raw=total_raw, output_dir=output_dir)
-    print(f"  报告路径: {report_path}")
+    print(f"  report path: {report_path}")
 
     elapsed = time.perf_counter() - start
-    print(f"\n耗时: {elapsed:.1f} 秒")
+    print(f"\nelapsed: {elapsed:.1f}s")
 
 
 def main():

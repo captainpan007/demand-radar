@@ -24,7 +24,7 @@ def scrape_hn() -> list[RawItem]:
                 resp.raise_for_status()
                 data = resp.json()
             except Exception as e:
-                print(f"[HN] 搜索 '{query}' 失败: {e}")
+                print(f"[HN] search '{query}' failed: {e}")
                 continue
 
             for hit in data.get("hits", []):
