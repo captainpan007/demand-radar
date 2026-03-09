@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demand Radar — Find Validated Product Ideas Daily</title>
+  <meta name="description" content="AI-powered demand signal scanner for indie developers. Daily reports from Hacker News, Product Hunt, and IndieHackers.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAF8;
+      --bg-alt: #F2F1EE;
+      --card-bg: #FFFFFF;
+      --text: #1A1A1A;
+      --text-secondary: #5A5A5A;
+      --text-muted: #8A8A8A;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --border: #E5E3DF;
+      --border-light: #EEEDEA;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Nav ─── */
+    nav {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ─── Hero ─── */
+    .hero {
+      padding: 80px 0 64px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(37, 99, 235, 0.08);
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(36px, 5vw, 56px);
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--text);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #333; }
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: #ccc;
+      box-shadow: var(--shadow);
+    }
+
+    /* ─── How It Works ─── */
+    .section {
+      padding: 64px 0;
+    }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 48px;
+      letter-spacing: -0.3px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .step {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s;
+    }
+    .step:hover { box-shadow: var(--shadow-lg); }
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--bg-alt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 22px;
+    }
+    .step h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .step p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ─── Sample Signals ─── */
+    .signals-section { background: var(--bg-alt); }
+    .signals {
+      display: grid;
+      gap: 16px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .signal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      box-shadow: var(--shadow);
+    }
+    .signal-card h4 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .signal-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tag-hn { background: #FFF1E6; color: #C2410C; }
+    .tag-ph { background: #FEF3E2; color: #B45309; }
+    .tag-ih { background: #EEF2FF; color: #4338CA; }
+    .signal-score {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* ─── Why ─── */
+    .why {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .why p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    .why p strong { color: var(--text); font-weight: 600; }
+
+    /* ─── Footer ─── */
+    footer {
+      border-top: 1px solid var(--border-light);
+      padding: 32px 0;
+      text-align: center;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 640px) {
+      .hero { padding: 56px 0 48px; }
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+      .steps { grid-template-columns: 1fr; gap: 14px; }
+      .step { padding: 24px 20px; }
+      .section-title { font-size: 26px; }
+      .signal-card { padding: 16px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">demand<span>.</span>radar</a>
+      <div class="nav-links">
+        <a href="#how">How It Works</a>
+        <a href="#signals">Signals</a>
+        <a href="https://github.com/pekingcity/demand-radar" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Open Source &middot; AI-Powered</div>
+      <h1>Stop Guessing.<br>Start Building What<br>People Actually Need.</h1>
+      <p>Demand Radar scans Hacker News, Product Hunt, and IndieHackers every day, uses AI to score real demand signals, and delivers a curated report of validated product ideas.</p>
+      <div class="hero-actions">
+        <a href="./reports/latest.html" class="btn btn-primary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H7A5 5 0 017 7h2m6 0h2a5 5 0 010 10h-2m-7-5h8"/></svg>
+          View Today's Report
+        </a>
+        <a href="https://twitter.com/pekingcity" target="_blank" class="btn btn-secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow on Twitter
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">From Noise to Opportunity in 3 Steps</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">📡</div>
+          <h3>Scan</h3>
+          <p>Scrapes top developer communities daily — Hacker News, Product Hunt, IndieHackers — collecting hundreds of posts and discussions.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">🧠</div>
+          <h3>Analyze</h3>
+          <p>AI scores each signal across 4 dimensions: pain level, payment signal, executability, and reach. Low-quality items are filtered out.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">📊</div>
+          <h3>Report</h3>
+          <p>Generates a clean, interactive HTML report with demand summaries, build estimates, and tool plans — ready to act on.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sample Signals -->
+  <section class="section signals-section" id="signals">
+    <div class="container">
+      <div class="section-label">Sample Signals</div>
+      <h2 class="section-title">What You'll Discover</h2>
+      <div class="signals">
+        <div class="signal-card">
+          <div>
+            <h4>"I'd pay $20/mo for a tool that monitors my side project's uptime and sends alerts via Telegram"</h4>
+            <div class="signal-meta">
+              <span class="tag tag-hn">Hacker News</span>
+              <span style="font-size:12px;color:var(--text-muted)">142 points</span>
+            </div>
+          </div>
+          <div class="signal-score">8</div>
+        </div>
+        <div class="signal-card">
+          <div>
+            <h4>"Looking for a simple invoicing tool for freelancers that integrates with Stripe and generates tax reports"</h4>
+            <div class="signal-meta">
+              <span class="tag tag-ih">IndieHackers</span>
+              <span style="font-size:12px;color:var(--text-muted)">67 comments</span>
+            </div>
+          </div>
+          <div class="signal-score">7</div>
+        </div>
+        <div class="signal-card">
+          <div>
+            <h4>"Why isn't there a good open-source alternative to Calendly that self-hosts easily?"</h4>
+            <div class="signal-meta">
+              <span class="tag tag-ph">Product Hunt</span>
+              <span style="font-size:12px;color:var(--text-muted)">89 upvotes</span>
+            </div>
+          </div>
+          <div class="signal-score">7</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="section" id="why">
+    <div class="container">
+      <div class="section-label">Why Demand Radar</div>
+      <h2 class="section-title">Built for Builders Who Ship</h2>
+      <div class="why">
+        <p>You've spent weeks building something nobody wanted. You've scrolled through forums hoping to stumble on a good idea. <strong>That's not a strategy — it's a lottery.</strong></p>
+        <p>Demand Radar does the tedious work for you. It reads thousands of posts, finds the ones where people are <strong>asking for solutions and willing to pay</strong>, and tells you exactly what to build, how long it'll take, and what tools to use.</p>
+        <p><strong>One report. Every morning. Zero guesswork.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/pekingcity/demand-radar" target="_blank">GitHub</a>
+        <a href="https://twitter.com/pekingcity" target="_blank">Twitter</a>
+        <a href="./reports/latest.html">Latest Report</a>
+      </div>
+      <div class="footer-copy">Demand Radar &mdash; Open source, built by indie devs for indie devs.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -17,6 +17,7 @@ venv/
 # Output (generated reports)
 output/
 *.html
+!docs/**/*.html
 
 # IDE / OS
 .idea/
