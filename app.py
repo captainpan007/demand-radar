@@ -230,6 +230,21 @@ async def search_page(
     )
 
 
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing(request: Request, db: SASession = Depends(get_db)):
+    """Pricing page."""
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(
+        "pricing.html",
+        {
+            "request": request,
+            "user": user,
+            "is_pro": user is not None and user["tier"] == "pro",
+            "checkout_url": config.LEMON_SQUEEZY_CHECKOUT_URL,
+        },
+    )
+
+
 @app.post("/admin/run-pipeline")
 async def trigger_pipeline():
     """Manual trigger for testing."""
