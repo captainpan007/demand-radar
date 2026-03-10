@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang | default('en') }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demand Radar - {{ date }}</title>
+  <title>{% if lang == 'zh' %}需求雷达{% else %}Demand Radar{% endif %} - {{ date }}</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -59,6 +59,7 @@
     .lang-btn {
       border-left: 1px solid #333;
       padding-left: 14px;
+      text-decoration: none;
     }
     .container { max-width: 680px; margin: 0 auto; padding: 0 20px 48px; }
 
@@ -261,19 +262,104 @@
       padding: 8px 0 16px;
     }
 
+    /* Auth UI */
+    .login-btn {
+      font-size: 13px; color: var(--accent); background: none; border: 1px solid var(--accent);
+      padding: 6px 14px; border-radius: 4px; text-decoration: none; cursor: pointer;
+    }
+    .login-btn:hover { background: var(--accent-dim); }
+    .user-badge { display: flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; }
+    .user-name { font-size: 12px; color: var(--text-secondary); }
+    .pro-badge {
+      font-size: 10px; padding: 2px 6px; background: var(--accent);
+      color: #fff; border-radius: 3px; font-weight: 600;
+    }
+
+    /* Paywall overlay */
+    .paywall-overlay { position: relative; margin-top: 8px; }
+    .paywall-blur { filter: blur(8px); pointer-events: none; user-select: none; }
+    .paywall-card { height: 90px; background: var(--card); border-left: 4px solid var(--border); margin-bottom: 2px; }
+    .paywall-cta {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(15,15,15,0.7);
+    }
+    .paywall-cta p { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+    .cta-btn {
+      display: inline-block; padding: 10px 24px; background: var(--accent);
+      color: #fff; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;
+    }
+    .cta-btn:hover { opacity: 0.9; }
+
+    /* Pro controls */
+    .pro-controls {
+      max-width: 680px; margin: 0 auto; padding: 0 20px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .date-picker-form select {
+      background: var(--card); color: var(--text-primary); border: 1px solid var(--border);
+      padding: 6px 10px; border-radius: 4px; font-size: 13px; font-family: 'Inter', sans-serif;
+    }
+    .search-form { display: flex; gap: 8px; flex: 1; }
+    .search-input {
+      flex: 1; background: var(--card); color: var(--text-primary); border: 1px solid var(--border);
+      padding: 6px 12px; border-radius: 4px; font-size: 13px; font-family: 'Inter', sans-serif;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-btn {
+      background: var(--accent); color: #fff; border: none; padding: 6px 16px;
+      border-radius: 4px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .search-btn:hover { opacity: 0.9; }
+
   </style>
 </head>
 <body>
   <header class="header">
     <div>
+      {% if lang == 'zh' %}
+      <h1 data-i18n="title">需求雷达</h1>
+      <div class="header-stats">{{ date }} · <span data-i18n="fetched">抓取</span> {{ total }}<span data-i18n="item-suffix">条</span> · <span data-i18n="qualified">有效需求</span> {{ count }}<span data-i18n="item-suffix">条</span> · <span data-i18n="saved-label">已收藏</span> <span id="fav-count">0</span><span data-i18n="item-suffix">条</span></div>
+      {% else %}
       <h1 data-i18n="title">Demand Radar</h1>
       <div class="header-stats">{{ date }} · <span data-i18n="fetched">Fetched</span> {{ total }}<span data-i18n="item-suffix"></span> · <span data-i18n="qualified">Qualified</span> {{ count }}<span data-i18n="item-suffix"></span> · <span data-i18n="saved-label">Saved</span> <span id="fav-count">0</span><span data-i18n="item-suffix"></span></div>
+      {% endif %}
     </div>
     <div class="header-controls">
-      <button type="button" class="filter-fav-btn" id="filter-fav-btn">Saved Only</button>
-      <button type="button" class="lang-btn" id="lang-btn">中文</button>
+      {% if user %}
+        <div class="user-badge">
+          {% if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="" class="user-avatar">{% endif %}
+          <span class="user-name">{{ user.name }}</span>
+          {% if is_pro %}<span class="pro-badge">PRO</span>{% endif %}
+          <a href="/auth/logout" class="lang-btn">Logout</a>
+        </div>
+      {% else %}
+        <a href="/auth/google" class="login-btn">Sign in with Google</a>
+      {% endif %}
+      <button type="button" class="filter-fav-btn" id="filter-fav-btn">{% if lang == 'zh' %}只看收藏{% else %}Saved Only{% endif %}</button>
+      {% if lang == 'zh' %}
+      <a href="{{ lang_switch_url | default('./') }}" class="lang-btn" id="lang-btn">EN</a>
+      {% else %}
+      <a href="{{ lang_switch_url | default('./') }}" class="lang-btn" id="lang-btn">中文</a>
+      {% endif %}
     </div>
   </header>
+  {% if is_pro and available_dates is defined and available_dates %}
+  <div class="pro-controls">
+    <form action="/history" method="get" class="date-picker-form">
+      <select name="date" onchange="this.form.submit()">
+        {% for d in available_dates %}
+        <option value="{{ d }}" {% if d == current_date %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <form action="/search" method="get" class="search-form">
+      <input type="text" name="q" placeholder="{% if lang == 'zh' %}搜索需求...{% else %}Search demands...{% endif %}" class="search-input">
+      <button type="submit" class="search-btn">{% if lang == 'zh' %}搜索{% else %}Search{% endif %}</button>
+    </form>
+  </div>
+  {% endif %}
   <main class="container">
     {% for item in items %}
     {% set sc = item.commercial_score %}
@@ -283,7 +369,7 @@
         <div class="card-row1">
           <span class="card-dot s{{ score_class }}" aria-hidden="true"></span>
           <div class="card-title-wrap">
-            <h2 class="card-title">{{ item.demand_summary }}</h2>
+            <h2 class="card-title">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</h2>
           </div>
           <span class="card-expand-icon" aria-hidden="true"></span>
           <button type="button" class="fav-btn" data-url="{{ item.raw.url }}" aria-label="Save" title="Save">☆</button>
@@ -293,12 +379,12 @@
           <span>score {{ item.raw.score }}</span>
           <span>comments {{ item.raw.comments }}</span>
         </div>
-        <div class="card-summary-text">{{ item.demand_summary }}</div>
+        <div class="card-summary-text">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</div>
       </div>
       <div class="card-detail">
         <div class="card-detail-inner">
-          <div class="target-user-tag"><span data-i18n="target-user">Target User</span>: {{ item.target_user }}</div>
-          <p class="product-idea">{{ item.product_idea }}</p>
+          <div class="target-user-tag"><span data-i18n="target-user">{% if lang == 'zh' %}目标用户{% else %}Target User{% endif %}</span>: {% if lang == 'zh' %}{{ item.target_user_zh or item.target_user }}{% else %}{{ item.target_user }}{% endif %}</div>
+          <p class="product-idea">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</p>
           <div class="score-grid">
             {% set sd = item.score_detail or {} %}
             {% set pl = (sd.get('pain_level', 0) or 0) %}
@@ -306,101 +392,80 @@
             {% set ex = (sd.get('executability', 0) or 0) %}
             {% set re = (sd.get('reach', 0) or 0) %}
             <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="pain-level">Pain Level</span>
+              <span class="score-grid-label" data-i18n="pain-level">{% if lang == 'zh' %}痛苦烈度{% else %}Pain Level{% endif %}</span>
               <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (pl / 3.0 * 100) | round(0) }}%"></div></div>
               <span class="score-grid-value">{{ pl }}/3</span>
             </div>
             <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="pay-signal">Pay Signal</span>
+              <span class="score-grid-label" data-i18n="pay-signal">{% if lang == 'zh' %}付费意愿{% else %}Pay Signal{% endif %}</span>
               <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ps / 3.0 * 100) | round(0) }}%"></div></div>
               <span class="score-grid-value">{{ ps }}/3</span>
             </div>
             <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="buildability">Buildability</span>
+              <span class="score-grid-label" data-i18n="buildability">{% if lang == 'zh' %}可执行性{% else %}Buildability{% endif %}</span>
               <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ex / 2.0 * 100) | round(0) }}%"></div></div>
               <span class="score-grid-value">{{ ex }}/2</span>
             </div>
             <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="reach">Reach</span>
+              <span class="score-grid-label" data-i18n="reach">{% if lang == 'zh' %}获客渠道{% else %}Reach{% endif %}</span>
               <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (re / 2.0 * 100) | round(0) }}%"></div></div>
               <span class="score-grid-value">{{ re }}/2</span>
             </div>
           </div>
-          <div class="score-reason-text">{{ item.score_reason }}</div>
+          <div class="score-reason-text">{% if lang == 'zh' %}{{ item.score_reason_zh or item.score_reason }}{% else %}{{ item.score_reason }}{% endif %}</div>
           {% if item.build_days or (item.tool_plan and item.tool_plan|length > 0) or item.cost_estimate or item.biggest_risk %}
           <div class="exec-plan-block">
-            <div class="exec-plan-label" data-i18n="build-plan">Build Plan</div>
+            <div class="exec-plan-label" data-i18n="build-plan">{% if lang == 'zh' %}执行方案{% else %}Build Plan{% endif %}</div>
             <div class="exec-plan-content">
-              {% if item.build_days %}<div class="build-days"><span data-i18n="eta">ETA</span>: {{ item.build_days }}</div>{% endif %}
-              {% if item.tool_plan and item.tool_plan|length > 0 %}
+              {% if item.build_days %}<div class="build-days"><span data-i18n="eta">{% if lang == 'zh' %}预计天数{% else %}ETA{% endif %}</span>: {% if lang == 'zh' %}{{ item.build_days_zh or item.build_days }}{% else %}{{ item.build_days }}{% endif %}</div>{% endif %}
+              {% set tp_display = (item.tool_plan_zh if lang == 'zh' and item.tool_plan_zh) or item.tool_plan %}
+              {% if tp_display and tp_display|length > 0 %}
               <div class="tool-tags">
-                {% for entry in item.tool_plan %}
+                {% for entry in tp_display %}
                 {% set tool_slug = (entry.tool | lower | replace(' ', '-') | replace('.', '-')) %}
                 <span class="tool-tag tool-{{ tool_slug }}"><span class="tool-name">{{ entry.tool }}</span>: {{ entry.role }}</span>
                 {% endfor %}
               </div>
               {% endif %}
-              {% if item.cost_estimate %}<div class="cost-estimate"><span data-i18n="cost">Cost</span>: {{ item.cost_estimate }}</div>{% endif %}
-              {% if item.biggest_risk %}<div class="biggest-risk"><span data-i18n="risk">Risk</span>: {{ item.biggest_risk }}</div>{% endif %}
+              {% if item.cost_estimate %}<div class="cost-estimate"><span data-i18n="cost">{% if lang == 'zh' %}成本{% else %}Cost{% endif %}</span>: {% if lang == 'zh' %}{{ item.cost_estimate_zh or item.cost_estimate }}{% else %}{{ item.cost_estimate }}{% endif %}</div>{% endif %}
+              {% if item.biggest_risk %}<div class="biggest-risk"><span data-i18n="risk">{% if lang == 'zh' %}风险{% else %}Risk{% endif %}</span>: {% if lang == 'zh' %}{{ item.biggest_risk_zh or item.biggest_risk }}{% else %}{{ item.biggest_risk }}{% endif %}</div>{% endif %}
             </div>
           </div>
           {% endif %}
-          <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn" data-i18n="source">Source</a>
+          <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn" data-i18n="source">{% if lang == 'zh' %}原文链接{% else %}Source{% endif %}</a>
         </div>
       </div>
     </article>
-    {% if loop.first %}<div class="card-hint" id="card-hint" data-i18n="hint">Click to expand</div>{% endif %}
+    {% if loop.first %}<div class="card-hint" id="card-hint" data-i18n="hint">{% if lang == 'zh' %}点击展开{% else %}Click to expand{% endif %}</div>{% endif %}
     {% endfor %}
+    {% if has_more is defined and has_more %}
+    <div class="paywall-overlay">
+      <div class="paywall-blur">
+        <div class="paywall-card"></div>
+        <div class="paywall-card"></div>
+        <div class="paywall-card"></div>
+      </div>
+      <div class="paywall-cta">
+        {% if is_visitor %}
+          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求{% else %}{{ blurred_count }} more demands today{% endif %}</p>
+          <a href="/auth/google" class="cta-btn">{% if lang == 'zh' %}登录查看更多{% else %}Sign in to see more{% endif %}</a>
+        {% elif is_free %}
+          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求{% else %}{{ blurred_count }} more demands today{% endif %}</p>
+          <a href="/pricing" class="cta-btn">{% if lang == 'zh' %}升级 Pro — $9/月{% else %}Upgrade to Pro — $9/mo{% endif %}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
   </main>
   <script>
     (function() {
       var KEY = "demand-radar-favorites";
-      var currentLang = "en";
+      var currentLang = document.documentElement.lang === "zh" ? "zh" : "en";
       var showFavOnly = false;
 
-      var LANG = {
-        en: {
-          title: "Demand Radar",
-          fetched: "Fetched",
-          "item-suffix": "",
-          qualified: "Qualified",
-          "saved-label": "Saved",
-          "filter-btn-off": "Saved Only",
-          "filter-btn-on": "Show All",
-          "target-user": "Target User",
-          "pain-level": "Pain Level",
-          "pay-signal": "Pay Signal",
-          buildability: "Buildability",
-          reach: "Reach",
-          "build-plan": "Build Plan",
-          eta: "ETA",
-          cost: "Cost",
-          risk: "Risk",
-          source: "Source",
-          hint: "Click to expand",
-          "lang-btn": "中文"
-        },
-        zh: {
-          title: "需求雷达",
-          fetched: "抓取",
-          "item-suffix": "条",
-          qualified: "有效需求",
-          "saved-label": "已收藏",
-          "filter-btn-off": "只看收藏",
-          "filter-btn-on": "显示全部",
-          "target-user": "目标用户",
-          "pain-level": "痛苦烈度",
-          "pay-signal": "付费意愿",
-          buildability: "可执行性",
-          reach: "获客渠道",
-          "build-plan": "执行方案",
-          eta: "预计天数",
-          cost: "成本",
-          risk: "风险",
-          source: "原文链接",
-          hint: "点击展开",
-          "lang-btn": "EN"
-        }
+      var FILTER_LABELS = {
+        en: { on: "Show All", off: "Saved Only" },
+        zh: { on: "显示全部", off: "只看收藏" }
       };
 
       function getFavorites() {
@@ -446,30 +511,13 @@
         if (hint) setTimeout(function() { hint.style.display = "none"; }, 5000);
 
         var filterBtn = document.getElementById("filter-fav-btn");
-        var langBtn = document.getElementById("lang-btn");
-
-        function applyLang(lang) {
-          currentLang = lang;
-          var t = LANG[lang];
-          document.documentElement.lang = lang === "en" ? "en" : "zh-CN";
-          document.querySelectorAll("[data-i18n]").forEach(function(el) {
-            var key = el.getAttribute("data-i18n");
-            if (key in t) el.textContent = t[key];
-          });
-          if (filterBtn) filterBtn.textContent = showFavOnly ? t["filter-btn-on"] : t["filter-btn-off"];
-          if (langBtn) langBtn.textContent = t["lang-btn"];
-        }
 
         if (filterBtn) {
           filterBtn.addEventListener("click", function() {
             showFavOnly = !showFavOnly;
             filterView(showFavOnly);
-            filterBtn.textContent = showFavOnly ? LANG[currentLang]["filter-btn-on"] : LANG[currentLang]["filter-btn-off"];
-          });
-        }
-        if (langBtn) {
-          langBtn.addEventListener("click", function() {
-            applyLang(currentLang === "en" ? "zh" : "en");
+            var labels = FILTER_LABELS[currentLang] || FILTER_LABELS.en;
+            filterBtn.textContent = showFavOnly ? labels.on : labels.off;
           });
         }
 
