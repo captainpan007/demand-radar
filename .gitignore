@@ -18,6 +18,7 @@ venv/
 output/
 *.html
 !docs/**/*.html
+!reporter/*.html
 
 # IDE / OS
 .idea/
