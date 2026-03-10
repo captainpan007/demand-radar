@@ -62,7 +62,7 @@
       {% if user and is_pro %}
         <div class="already-pro" style="color: var(--accent); font-size: 14px; text-align: center; padding: 14px;">You're already a Pro member!</div>
       {% elif checkout_url %}
-        <a href="{{ checkout_url }}{% if user %}?checkout[custom][user_email]={{ user.email }}{% endif %}" class="checkout-btn">Subscribe Now</a>
+        <a href="{{ checkout_url }}?checkout[custom][user_email]={% if user %}{{ user.email }}{% endif %}&checkout[success_url]={{ base_url }}/" class="checkout-btn">Subscribe Now</a>
       {% else %}
         <div class="checkout-btn" style="background: var(--border); cursor: default;">Coming Soon</div>
       {% endif %}

@@ -2,11 +2,11 @@
 import hashlib
 import hmac
 import json
+import os
 
 from fastapi import APIRouter, Request, HTTPException
 from sqlalchemy import select
 
-from config import LEMON_SQUEEZY_SIGNING_SECRET
 from database import User, Subscription
 
 router = APIRouter()
@@ -14,10 +14,11 @@ router = APIRouter()
 
 def verify_signature(payload: bytes, signature: str) -> bool:
     """Verify HMAC-SHA256 signature from Lemon Squeezy."""
-    if not LEMON_SQUEEZY_SIGNING_SECRET:
+    secret = os.getenv("LEMON_SQUEEZY_SIGNING_SECRET", "")
+    if not secret:
         return True  # skip in dev when no secret configured
     digest = hmac.new(
-        LEMON_SQUEEZY_SIGNING_SECRET.encode(), payload, hashlib.sha256
+        secret.encode(), payload, hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(digest, signature)
 
@@ -34,11 +35,18 @@ async def lemon_webhook(request: Request):
         raise HTTPException(status_code=403, detail="Invalid signature")
 
     data = json.loads(body)
-    event_name = data.get("meta", {}).get("event_name", "")
+    meta = data.get("meta", {})
+    event_name = meta.get("event_name", "")
     attrs = data.get("data", {}).get("attributes", {})
-    user_email = attrs.get("user_email", "")
+
+    # Get user email: prefer custom_data (passed via checkout URL), fallback to attributes
+    custom_data = meta.get("custom_data", {}) or {}
+    user_email = custom_data.get("user_email") or attrs.get("user_email", "")
+
     lemon_sub_id = str(data.get("data", {}).get("id", ""))
     status = attrs.get("status", "")
+
+    print(f"[webhook] Event: {event_name}, email: {user_email}, status: {status}")
 
     db = SessionFactory()
     try:

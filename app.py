@@ -243,6 +243,7 @@ async def pricing(request: Request, db: SASession = Depends(get_db)):
             "user": user,
             "is_pro": user is not None and user["tier"] == "pro",
             "checkout_url": config.LEMON_SQUEEZY_CHECKOUT_URL,
+            "base_url": config.BASE_URL,
         },
     )
 

@@ -27,11 +27,43 @@
 
 ---
 
-## Current Status (2026-03-08)
+### v0.5 — Web Product + Railway Deployment (2026-03-10)
+- **FastAPI web app** with Google OAuth login
+- **3-tier access**: visitor (3 items), free (5 items), pro (unlimited)
+- **Lemon Squeezy** subscription at $9/mo
+- **Pro features**: historical reports with date picker, keyword search
+- **Railway deployment** with persistent SQLite volume
+- **APScheduler** daily cron at 06:00 UTC
+
+---
+
+## Railway Environment Variables
+
+**Pan must add these manually in Railway dashboard → Variables:**
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DEEPSEEK_API_KEY` | Yes | AI scoring API key |
+| `PRODUCTHUNT_API_KEY` | Yes | Product Hunt GraphQL API key |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
+| `SECRET_KEY` | Yes | Session encryption key (random string) |
+| `BASE_URL` | Yes | `https://demand-radar-production.up.railway.app` |
+| `LEMON_SQUEEZY_CHECKOUT_URL` | Yes | Checkout URL from Lemon Squeezy product page |
+| `LEMON_SQUEEZY_SIGNING_SECRET` | Yes | Webhook signing secret from Lemon Squeezy settings |
+
+**Lemon Squeezy Webhook URL** (set in Lemon Squeezy dashboard):
+`https://demand-radar-production.up.railway.app/webhook/lemon`
+
+Events to subscribe: `subscription_created`, `subscription_updated`, `subscription_expired`
+
+---
+
+## Current Status (2026-03-10)
 
 - **Active sources**: HN · Product Hunt · IndieHackers
-- **Daily output**: ~40 qualified demand signals from ~80 raw items
-- **Stage**: local personal tool — run manually via `python main.py`
+- **Daily output**: ~44 qualified demand signals from ~99 raw items
+- **Stage**: deployed on Railway, live at https://demand-radar-production.up.railway.app
 - **Known issues**: IndieHackers fails inside asyncio loop (Playwright sync/async conflict — pre-existing)
 
 ## Next Steps
