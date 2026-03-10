@@ -17,7 +17,7 @@ from auth import router as auth_router
 from database import Session as DBSession
 from database import User, init_db, get_session_factory
 from pipeline import run_pipeline_sync, run_pipeline
-from storage import get_demands_by_date
+from storage import get_demands_by_date, get_available_dates
 
 # Global session factory, initialized on startup
 SessionFactory = None
@@ -121,6 +121,12 @@ async def index(
         has_more = False
         blurred_count = 0
 
+    # Pro user extras
+    available_dates = []
+    current_date = today.isoformat()
+    if is_pro:
+        available_dates = [d.isoformat() for d in get_available_dates(db)]
+
     # Language switch URL
     other_lang = "zh" if lang == "en" else "en"
     lang_switch_url = f"/?lang={other_lang}"
@@ -141,6 +147,8 @@ async def index(
             "is_visitor": is_visitor,
             "is_free": is_free,
             "is_pro": is_pro,
+            "available_dates": available_dates,
+            "current_date": current_date,
         },
     )
 
