@@ -1,4 +1,4 @@
-"""Google OAuth routes."""
+"""Google OAuth routes — reads credentials at request time."""
 import os
 import secrets
 from datetime import datetime, timedelta
@@ -13,28 +13,30 @@ from database import User, Session as DBSession
 
 router = APIRouter(prefix="/auth")
 
-oauth = OAuth()
 
-
-def init_oauth():
-    """Register Google OAuth client. Call after env vars are loaded."""
+def _get_oauth(request: Request):
+    """Build a fresh OAuth client with current env vars on every call."""
+    oauth = OAuth()
     oauth.register(
         name="google",
-        client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
-        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+        client_id=os.environ["GOOGLE_CLIENT_ID"],
+        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
         client_kwargs={"scope": "openid email profile"},
     )
+    return oauth
 
 
 @router.get("/google")
 async def google_login(request: Request):
+    oauth = _get_oauth(request)
     redirect_uri = f"{BASE_URL}/auth/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
 @router.get("/callback")
 async def google_callback(request: Request):
+    oauth = _get_oauth(request)
     from app import SessionFactory
     token_data = await oauth.google.authorize_access_token(request)
     userinfo = token_data.get("userinfo")
