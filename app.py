@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session as SASession
 from starlette.middleware.sessions import SessionMiddleware
@@ -149,6 +149,52 @@ async def index(
             "is_pro": is_pro,
             "available_dates": available_dates,
             "current_date": current_date,
+        },
+    )
+
+
+@app.get("/history", response_class=HTMLResponse)
+async def history(
+    request: Request,
+    date: str = "",
+    lang: str = "en",
+    db: SASession = Depends(get_db),
+):
+    """Historical reports for pro users."""
+    user = get_current_user(request, db)
+    if not user or user["tier"] != "pro":
+        return RedirectResponse("/pricing")
+
+    from datetime import date as date_type
+    try:
+        report_date = date_type.fromisoformat(date) if date else date_type.today()
+    except ValueError:
+        report_date = date_type.today()
+
+    all_items = get_demands_by_date(db, report_date)
+    available_dates = [d.isoformat() for d in get_available_dates(db)]
+
+    other_lang = "zh" if lang == "en" else "en"
+    lang_switch_url = f"/history?date={report_date.isoformat()}&lang={other_lang}"
+
+    return templates.TemplateResponse(
+        "template.html",
+        {
+            "request": request,
+            "date": report_date.isoformat(),
+            "total": len(all_items),
+            "count": len(all_items),
+            "items": all_items,
+            "lang": lang,
+            "lang_switch_url": lang_switch_url,
+            "user": user,
+            "has_more": False,
+            "blurred_count": 0,
+            "is_visitor": False,
+            "is_free": False,
+            "is_pro": True,
+            "available_dates": available_dates,
+            "current_date": report_date.isoformat(),
         },
     )
 
