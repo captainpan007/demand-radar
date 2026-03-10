@@ -19,8 +19,8 @@ def _get_oauth(request: Request):
     oauth = OAuth()
     oauth.register(
         name="google",
-        client_id=os.environ["GOOGLE_CLIENT_ID"],
-        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+        client_id=os.getenv("GOOGLE_CLIENT_ID", ""),
+        client_secret=os.getenv("GOOGLE_CLIENT_SECRET", ""),
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
         client_kwargs={"scope": "openid email profile"},
     )
@@ -29,6 +29,7 @@ def _get_oauth(request: Request):
 
 @router.get("/google")
 async def google_login(request: Request):
+    print(f"[auth] GOOGLE_CLIENT_ID: {os.getenv('GOOGLE_CLIENT_ID', 'NOT FOUND')[:20]}...")
     oauth = _get_oauth(request)
     redirect_uri = f"{BASE_URL}/auth/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
