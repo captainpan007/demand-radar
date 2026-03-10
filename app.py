@@ -13,7 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import config
 from config import SECRET_KEY
-from auth import router as auth_router
+from auth import router as auth_router, init_oauth
 from webhook import router as webhook_router
 from database import Session as DBSession
 from database import User, init_db, get_session_factory
@@ -32,7 +32,8 @@ async def lifespan(app: FastAPI):
     global SessionFactory
     engine = init_db()
     SessionFactory = get_session_factory(engine)
-    print("[app] Database initialized")
+    init_oauth()
+    print("[app] Database and OAuth initialized")
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(

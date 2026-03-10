@@ -1,25 +1,30 @@
 """Google OAuth routes."""
+import os
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BASE_URL
-from database import User, Session as DBSession, get_session_factory
+from config import BASE_URL
+from database import User, Session as DBSession
 
 router = APIRouter(prefix="/auth")
 
 oauth = OAuth()
-oauth.register(
-    name="google",
-    client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET,
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
-)
+
+
+def init_oauth():
+    """Register Google OAuth client. Call after env vars are loaded."""
+    oauth.register(
+        name="google",
+        client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
+        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
 
 
 @router.get("/google")
@@ -38,7 +43,6 @@ async def google_callback(request: Request):
 
     db = SessionFactory()
     try:
-        # Find or create user
         user = db.execute(
             select(User).where(User.google_id == str(userinfo["sub"]))
         ).scalar_one_or_none()
@@ -56,10 +60,8 @@ async def google_callback(request: Request):
         else:
             user.name = userinfo.get("name", user.name)
             user.avatar_url = userinfo.get("picture", user.avatar_url)
-            user.updated_at = datetime.now(timezone.utc)
             db.commit()
 
-        # Create session
         session_token = secrets.token_urlsafe(32)
         db_sess = DBSession(
             token=session_token,
