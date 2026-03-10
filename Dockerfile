@@ -23,4 +23,4 @@ COPY . .
 # Data directory for SQLite (mount persistent volume here)
 RUN mkdir -p /app/data
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}
