@@ -4,557 +4,651 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% if lang == 'zh' %}需求雷达{% else %}Demand Radar{% endif %} - {{ date }}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0F0F0F;
-      --card: #161616;
-      --border: #222;
-      --text-primary: #F0F0F0;
-      --text-secondary: #999;
-      --text-muted: #888;
-      --accent: #4F6EF7;
-      --accent-dim: rgba(79,110,247,0.1);
+      --bg: #09090B;
+      --surface: #111113;
+      --card: #16161A;
+      --card-hover: #1C1C21;
+      --border: #27272A;
+      --border-light: #3F3F46;
+      --text-primary: #FAFAFA;
+      --text-secondary: #A1A1AA;
+      --text-muted: #71717A;
+      --accent: #6366F1;
+      --accent-light: #818CF8;
+      --accent-dim: rgba(99,102,241,0.12);
+      --green: #34D399;
+      --green-dim: rgba(52,211,153,0.12);
+      --amber: #FBBF24;
+      --amber-dim: rgba(251,191,36,0.12);
+      --red: #F87171;
+      --red-dim: rgba(248,113,113,0.12);
+      --blue: #60A5FA;
+      --blue-dim: rgba(96,165,250,0.12);
+      --radius: 10px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text-primary);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
-    .header {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 28px 20px 20px;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      flex-wrap: wrap;
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Top Nav ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(9,9,11,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topnav-inner {
+      max-width: 1080px; margin: 0 auto;
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-size: 18px; font-weight: 700; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent) 0%, #A855F7 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #fff;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-link {
+      font-size: 13px; color: var(--text-muted); padding: 6px 12px;
+      border-radius: 6px; transition: all 0.15s;
+    }
+    .nav-link:hover { color: var(--text-secondary); background: var(--surface); }
+    .login-btn {
+      font-size: 13px; color: var(--accent-light); background: var(--accent-dim);
+      padding: 7px 16px; border-radius: 6px; font-weight: 500;
+      transition: all 0.15s; border: none; cursor: pointer;
+    }
+    .login-btn:hover { background: rgba(99,102,241,0.2); }
+    .user-badge { display: flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 26px; height: 26px; border-radius: 50%; }
+    .user-name { font-size: 13px; color: var(--text-secondary); }
+    .pro-badge {
+      font-size: 10px; padding: 2px 8px; font-weight: 600; letter-spacing: 0.5px;
+      background: linear-gradient(135deg, var(--accent) 0%, #A855F7 100%);
+      color: #fff; border-radius: 10px;
+    }
+
+    /* ── Hero Stats ── */
+    .hero {
+      max-width: 1080px; margin: 0 auto;
+      padding: 32px 24px 0;
+    }
+    .hero-row {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 8px;
+    }
+    .hero h1 { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    .hero-date { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+    .stat-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-secondary);
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 5px 12px; border-radius: 20px;
+    }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .stat-dot.green { background: var(--green); }
+    .stat-dot.amber { background: var(--amber); }
+    .stat-dot.blue { background: var(--blue); }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      max-width: 1080px; margin: 0 auto;
+      padding: 20px 24px 0;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-chip {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 20px;
+      cursor: pointer; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover { color: var(--text-secondary); border-color: var(--border-light); }
+    .filter-chip.active {
+      color: var(--accent-light); background: var(--accent-dim);
+      border-color: rgba(99,102,241,0.3);
+    }
+    .filter-sep {
+      width: 1px; height: 20px; background: var(--border); margin: 0 4px;
+    }
+    .search-inline {
+      display: flex; align-items: center; gap: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 0 4px 0 14px; margin-left: auto;
+      transition: border-color 0.15s;
+    }
+    .search-inline:focus-within { border-color: var(--accent); }
+    .search-inline input {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; color: var(--text-primary); background: none;
+      border: none; outline: none; padding: 6px 0; width: 140px;
+    }
+    .search-inline input::placeholder { color: var(--text-muted); }
+    .search-inline button {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; color: var(--accent-light); background: var(--accent-dim);
+      border: none; padding: 4px 10px; border-radius: 14px;
+      cursor: pointer; font-weight: 500;
+    }
+    .search-inline button:hover { background: rgba(99,102,241,0.2); }
+
+    /* ── Pro Controls ── */
+    .pro-controls {
+      max-width: 1080px; margin: 0 auto; padding: 16px 24px 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .date-select {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); background: var(--surface);
+      border: 1px solid var(--border); padding: 6px 12px;
+      border-radius: 20px; cursor: pointer;
+    }
+
+    /* ── Card Grid ── */
+    .grid {
+      max-width: 1080px; margin: 0 auto;
+      padding: 20px 24px 48px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 12px;
     }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .header-stats {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-muted);
-    }
-    .header-controls { display: flex; align-items: center; gap: 14px; }
-    .filter-fav-btn, .lang-btn {
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-secondary);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 0;
-    }
-    .filter-fav-btn:hover, .lang-btn:hover { color: var(--text-primary); }
-    .lang-btn {
-      border-left: 1px solid #333;
-      padding-left: 14px;
-      text-decoration: none;
-    }
-    .container { max-width: 680px; margin: 0 auto; padding: 0 20px 48px; }
 
     .card {
-      position: relative;
       background: var(--card);
-      border-left: 4px solid var(--border);
-      border-bottom: 1px solid #1a1a1a;
-      transition: border-left-color 0.2s;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.2s;
+      cursor: pointer;
     }
+    .card:hover { background: var(--card-hover); border-color: var(--border-light); transform: translateY(-1px); }
     .card.card-hidden { display: none !important; }
-    .card.score-8 { border-left-color: #4F6EF7; }
-    .card.score-7 { border-left-color: #6EE7B7; }
-    .card.score-6 { border-left-color: #F59E0B; }
-    .card.score-5 { border-left-color: #444; }
+    .card.expanded { grid-column: 1 / -1; }
 
-    .card-summary {
-      display: block;
-      padding: 14px 20px 14px 16px;
-      cursor: pointer;
-      min-height: 80px;
-      text-decoration: none;
-      color: inherit;
+    .card-header {
+      padding: 16px 16px 12px;
     }
-    .card-summary:focus { outline: none; }
-    .card-row1 {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
+    .card-top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
     }
-    .card-dot {
-      flex-shrink: 0;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
+    .card-badges { display: flex; align-items: center; gap: 6px; }
+    .source-badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+      padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
     }
-    .card-dot.s8 { background: #4F6EF7; }
-    .card-dot.s7 { background: #6EE7B7; }
-    .card-dot.s6 { background: #F59E0B; }
-    .card-dot.s5 { background: #444; }
-    .card-title-wrap { flex: 1; min-width: 0; }
-    .card-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #CCCCCC;
-      line-height: 1.3;
+    .source-badge.hn { background: #FF660020; color: #FF6600; }
+    .source-badge.producthunt { background: #DA552F20; color: #DA552F; }
+    .source-badge.ph { background: #DA552F20; color: #DA552F; }
+    .source-badge.indiehackers { background: #0E6DB020; color: #2E9ADE; }
+    .source-badge.ih { background: #0E6DB020; color: #2E9ADE; }
+    .source-badge.reddit { background: #FF450020; color: #FF4500; }
+    .source-badge.g2 { background: #FF492C20; color: #FF492C; }
+    .trend-indicator {
+      font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 4px;
     }
-    .card-expand-icon {
-      flex-shrink: 0;
-      font-size: 12px;
-      color: #444;
-      transition: color 0.2s;
-      pointer-events: none;
-    }
-    .card:hover .card-expand-icon { color: #888; }
-    .card.expanded .card-expand-icon { color: #888; }
-    .card.expanded .card-expand-icon::before { content: "▲"; }
-    .card:not(.expanded) .card-expand-icon::before { content: "▼"; }
+    .trend-hot { color: var(--red); background: var(--red-dim); }
+    .trend-rising { color: var(--amber); background: var(--amber-dim); }
+    .trend-normal { color: var(--text-muted); background: var(--surface); }
+
+    .card-actions { display: flex; align-items: center; gap: 4px; }
     .fav-btn {
-      flex-shrink: 0;
-      font-size: 18px;
-      line-height: 1;
-      color: var(--text-muted);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 2px 6px;
+      font-size: 16px; line-height: 1; color: var(--text-muted);
+      background: none; border: none; cursor: pointer;
+      padding: 4px; border-radius: 4px; transition: all 0.15s;
     }
-    .fav-btn:hover { color: var(--text-secondary); }
-    .fav-btn.fav-active { color: #F59E0B; }
+    .fav-btn:hover { color: var(--text-secondary); background: var(--surface); }
+    .fav-btn.fav-active { color: var(--amber); }
     .fav-btn.pop { animation: starPop 0.3s ease; }
     @keyframes starPop {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.25); }
-    }
-    .card-row2 {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-    .card-row2 span { margin-right: 12px; }
-    .card-summary-text {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      50% { transform: scale(1.3); }
     }
 
-    .card-detail {
-      max-height: 0;
+    .card-title {
+      font-size: 15px; font-weight: 600; color: var(--text-primary);
+      line-height: 1.4; margin-bottom: 8px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+    .card-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      padding: 0 16px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-meta {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .card-meta-item { display: flex; align-items: center; gap: 4px; }
+    .score-ring {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .score-ring.s8 { background: var(--accent-dim); color: var(--accent-light); border: 2px solid var(--accent); }
+    .score-ring.s7 { background: var(--green-dim); color: var(--green); border: 2px solid var(--green); }
+    .score-ring.s6 { background: var(--amber-dim); color: var(--amber); border: 2px solid var(--amber); }
+    .score-ring.s5 { background: var(--surface); color: var(--text-muted); border: 2px solid var(--border); }
+
+    /* ── Expanded Detail ── */
+    .card-detail {
+      max-height: 0; overflow: hidden;
       transition: max-height 0.35s ease-out;
     }
     .card.expanded .card-detail {
-      max-height: 1200px;
+      max-height: 1400px;
       transition: max-height 0.4s ease-in;
     }
     .card-detail-inner {
-      padding: 0 20px 20px 16px;
+      padding: 0 16px 16px;
       border-top: 1px solid var(--border);
+      margin-top: 4px;
       padding-top: 16px;
     }
-    .target-user-tag {
-      font-size: 12px;
-      font-weight: 400;
-      color: #BBBBBB;
-      margin-bottom: 12px;
+    .detail-section { margin-bottom: 16px; }
+    .detail-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
     }
-    .product-idea {
-      font-size: 15px;
-      font-weight: 400;
-      color: #BBBBBB;
-      line-height: 1.8;
-      margin-bottom: 16px;
+    .detail-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .detail-highlight {
+      font-size: 14px; color: var(--text-primary); line-height: 1.7;
+      background: var(--surface); padding: 12px 14px; border-radius: 8px;
+      border-left: 3px solid var(--accent);
     }
     .score-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
-      margin-bottom: 12px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
     }
-    .score-grid-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
+    .score-bar-item {
+      display: flex; align-items: center; gap: 8px; font-size: 12px;
     }
-    .score-grid-label { color: #AAAAAA; min-width: 4em; }
-    .score-grid-track {
-      flex: 1;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
+    .score-bar-label { color: var(--text-muted); min-width: 80px; }
+    .score-bar-track {
+      flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
     }
-    .score-grid-fill {
-      height: 100%;
-      border-radius: 2px;
-      background: var(--accent);
-    }
-    .score-grid-value { color: var(--text-secondary); min-width: 2.5em; text-align: right; }
-    .score-reason-text {
-      font-size: 12px;
-      color: #AAAAAA;
-      line-height: 1.5;
-      margin-bottom: 14px;
-    }
-    .exec-plan-block { margin-bottom: 14px; }
-    .exec-plan-label {
-      font-size: 12px;
-      color: #AAAAAA;
-      margin-bottom: 6px;
-    }
-    .exec-plan-content {
-      font-size: 15px;
-      color: #BBBBBB;
-      line-height: 1.6;
-    }
-    .build-days { margin-bottom: 6px; }
-    .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .score-bar-fill { height: 100%; border-radius: 2px; }
+    .score-bar-fill.accent { background: var(--accent); }
+    .score-bar-fill.green { background: var(--green); }
+    .score-bar-fill.amber { background: var(--amber); }
+    .score-bar-fill.blue { background: var(--blue); }
+    .score-bar-value { color: var(--text-secondary); min-width: 30px; text-align: right; }
+    .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .tool-tag {
-      font-size: 12px;
-      padding: 5px 10px;
-      border-radius: 4px;
-      background: #2a2a2a;
-      color: #AAAAAA;
+      font-size: 11px; padding: 4px 10px; border-radius: 6px;
+      background: var(--surface); color: var(--text-secondary);
+      border: 1px solid var(--border);
     }
     .tool-tag .tool-name { font-weight: 600; }
-    .tool-tag.tool-claude-code { background: #1a3a2a; color: #6EE7B7; }
-    .tool-tag.tool-cursor { background: #1a2a3a; color: #60A5FA; }
-    .tool-tag.tool-gemini { background: #2a1a3a; color: #C084FC; }
-    .tool-tag.tool-bolt-new { background: #3a2a1a; color: #FB923C; }
-    .tool-tag.tool-firecrawl { background: #3a1a1a; color: #F87171; }
-    .tool-tag.tool-v0 { background: #1a1a3a; color: #818CF8; }
-    .tool-tag.tool-replit { background: #1a3a3a; color: #34D399; }
-    .tool-tag.tool-windsurf { background: #2a3a1a; color: #A3E635; }
-    .cost-estimate { margin: 6px 0; color: #AAAAAA; }
-    .biggest-risk { margin-top: 6px; color: #AAAAAA; }
-    .link-btn {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--accent);
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      text-decoration: none;
+    .tool-tag.tool-claude-code { background: #065F4620; color: #34D399; border-color: #065F4640; }
+    .tool-tag.tool-cursor { background: #1E3A5F20; color: #60A5FA; border-color: #1E3A5F40; }
+    .tool-tag.tool-gemini { background: #3B1F6020; color: #C084FC; border-color: #3B1F6040; }
+    .tool-tag.tool-bolt-new { background: #5F3B1E20; color: #FB923C; border-color: #5F3B1E40; }
+    .tool-tag.tool-firecrawl { background: #5F1E1E20; color: #F87171; border-color: #5F1E1E40; }
+    .tool-tag.tool-v0 { background: #1E1E5F20; color: #818CF8; border-color: #1E1E5F40; }
+    .tool-tag.tool-replit { background: #1E5F5F20; color: #34D399; border-color: #1E5F5F40; }
+    .tool-tag.tool-windsurf { background: #3B5F1E20; color: #A3E635; border-color: #3B5F1E40; }
+    .detail-meta {
+      display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-muted);
+      margin-top: 8px;
     }
-    .link-btn:hover { text-decoration: underline; }
-    .card-hint {
-      text-align: center;
-      font-size: 12px;
-      color: #444;
-      padding: 8px 0 16px;
+    .source-link {
+      font-size: 12px; font-weight: 500; color: var(--accent-light);
+      display: inline-flex; align-items: center; gap: 4px;
     }
+    .source-link:hover { text-decoration: underline; }
 
-    /* Auth UI */
-    .login-btn {
-      font-size: 13px; color: var(--accent); background: none; border: 1px solid var(--accent);
-      padding: 6px 14px; border-radius: 4px; text-decoration: none; cursor: pointer;
+    /* ── Paywall ── */
+    .paywall-overlay { position: relative; grid-column: 1 / -1; }
+    .paywall-blur { filter: blur(8px); pointer-events: none; user-select: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+    .paywall-ghost {
+      height: 160px; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius);
     }
-    .login-btn:hover { background: var(--accent-dim); }
-    .user-badge { display: flex; align-items: center; gap: 8px; }
-    .user-avatar { width: 24px; height: 24px; border-radius: 50%; }
-    .user-name { font-size: 12px; color: var(--text-secondary); }
-    .pro-badge {
-      font-size: 10px; padding: 2px 6px; background: var(--accent);
-      color: #fff; border-radius: 3px; font-weight: 600;
-    }
-
-    /* Paywall overlay */
-    .paywall-overlay { position: relative; margin-top: 8px; }
-    .paywall-blur { filter: blur(8px); pointer-events: none; user-select: none; }
-    .paywall-card { height: 90px; background: var(--card); border-left: 4px solid var(--border); margin-bottom: 2px; }
     .paywall-cta {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: rgba(15,15,15,0.7);
+      background: rgba(9,9,11,0.75); border-radius: var(--radius);
     }
-    .paywall-cta p { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+    .paywall-cta p { color: var(--text-secondary); font-size: 14px; margin-bottom: 14px; }
     .cta-btn {
-      display: inline-block; padding: 10px 24px; background: var(--accent);
-      color: #fff; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;
+      display: inline-block; padding: 10px 28px;
+      background: linear-gradient(135deg, var(--accent) 0%, #A855F7 100%);
+      color: #fff; border-radius: 8px; font-size: 14px; font-weight: 600;
+      transition: opacity 0.15s;
     }
     .cta-btn:hover { opacity: 0.9; }
 
-    /* Pro controls */
-    .pro-controls {
-      max-width: 680px; margin: 0 auto; padding: 0 20px 16px;
-      display: flex; align-items: center; gap: 12px;
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; padding: 16px; }
+      .hero { padding: 24px 16px 0; }
+      .hero h1 { font-size: 22px; }
+      .filter-bar { padding: 16px 16px 0; }
+      .topnav-inner { padding: 12px 16px; }
+      .search-inline input { width: 100px; }
+      .score-grid { grid-template-columns: 1fr; }
     }
-    .date-picker-form select {
-      background: var(--card); color: var(--text-primary); border: 1px solid var(--border);
-      padding: 6px 10px; border-radius: 4px; font-size: 13px; font-family: 'Inter', sans-serif;
-    }
-    .search-form { display: flex; gap: 8px; flex: 1; }
-    .search-input {
-      flex: 1; background: var(--card); color: var(--text-primary); border: 1px solid var(--border);
-      padding: 6px 12px; border-radius: 4px; font-size: 13px; font-family: 'Inter', sans-serif;
-    }
-    .search-input::placeholder { color: var(--text-muted); }
-    .search-btn {
-      background: var(--accent); color: #fff; border: none; padding: 6px 16px;
-      border-radius: 4px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif;
-    }
-    .search-btn:hover { opacity: 0.9; }
-
   </style>
 </head>
 <body>
-  <header class="header">
-    <div>
-      {% if lang == 'zh' %}
-      <h1 data-i18n="title">需求雷达</h1>
-      <div class="header-stats">{{ date }} · <span data-i18n="fetched">抓取</span> {{ total }}<span data-i18n="item-suffix">条</span> · <span data-i18n="qualified">有效需求</span> {{ count }}<span data-i18n="item-suffix">条</span> · <span data-i18n="saved-label">已收藏</span> <span id="fav-count">0</span><span data-i18n="item-suffix">条</span></div>
-      {% else %}
-      <h1 data-i18n="title">Demand Radar</h1>
-      <div class="header-stats">{{ date }} · <span data-i18n="fetched">Fetched</span> {{ total }}<span data-i18n="item-suffix"></span> · <span data-i18n="qualified">Qualified</span> {{ count }}<span data-i18n="item-suffix"></span> · <span data-i18n="saved-label">Saved</span> <span id="fav-count">0</span><span data-i18n="item-suffix"></span></div>
-      {% endif %}
+  <!-- Top Navigation -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">D</span>
+        <span>{% if lang == 'zh' %}需求雷达{% else %}Demand Radar{% endif %}</span>
+      </a>
+      <div class="nav-right">
+        {% if lang == 'zh' %}
+        <a href="{{ lang_switch_url | default('./') }}" class="nav-link">EN</a>
+        {% else %}
+        <a href="{{ lang_switch_url | default('./') }}" class="nav-link">中文</a>
+        {% endif %}
+        {% if user %}
+          <div class="user-badge">
+            {% if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="" class="user-avatar">{% endif %}
+            <span class="user-name">{{ user.name }}</span>
+            {% if is_pro %}<span class="pro-badge">PRO</span>{% endif %}
+          </div>
+          <a href="/auth/logout" class="nav-link">{% if lang == 'zh' %}退出{% else %}Logout{% endif %}</a>
+        {% else %}
+          <a href="/auth/google" class="login-btn">{% if lang == 'zh' %}Google 登录{% else %}Sign in{% endif %}</a>
+        {% endif %}
+      </div>
     </div>
-    <div class="header-controls">
-      {% if user %}
-        <div class="user-badge">
-          {% if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="" class="user-avatar">{% endif %}
-          <span class="user-name">{{ user.name }}</span>
-          {% if is_pro %}<span class="pro-badge">PRO</span>{% endif %}
-          <a href="/auth/logout" class="lang-btn">Logout</a>
-        </div>
-      {% else %}
-        <a href="/auth/google" class="login-btn">Sign in with Google</a>
-      {% endif %}
-      <button type="button" class="filter-fav-btn" id="filter-fav-btn">{% if lang == 'zh' %}只看收藏{% else %}Saved Only{% endif %}</button>
-      {% if lang == 'zh' %}
-      <a href="{{ lang_switch_url | default('./') }}" class="lang-btn" id="lang-btn">EN</a>
-      {% else %}
-      <a href="{{ lang_switch_url | default('./') }}" class="lang-btn" id="lang-btn">中文</a>
-      {% endif %}
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-row">
+      <div>
+        <h1>{% if lang == 'zh' %}今日需求信号{% else %}Today's Demand Signals{% endif %}</h1>
+        <div class="hero-date">{{ date }}</div>
+      </div>
+      <div class="stat-pills">
+        <span class="stat-pill"><span class="stat-dot green"></span> {{ count }} {% if lang == 'zh' %}条有效{% else %}qualified{% endif %}</span>
+        <span class="stat-pill"><span class="stat-dot amber"></span> {{ total }} {% if lang == 'zh' %}条抓取{% else %}scraped{% endif %}</span>
+        <span class="stat-pill"><span class="stat-dot blue"></span> <span id="fav-count">0</span> {% if lang == 'zh' %}已收藏{% else %}saved{% endif %}</span>
+      </div>
     </div>
-  </header>
+  </section>
+
   {% if is_pro and available_dates is defined and available_dates %}
+  <!-- Pro Controls -->
   <div class="pro-controls">
-    <form action="/history" method="get" class="date-picker-form">
-      <select name="date" onchange="this.form.submit()">
+    <form action="/history" method="get" style="display:inline">
+      <select name="date" class="date-select" onchange="this.form.submit()">
         {% for d in available_dates %}
         <option value="{{ d }}" {% if d == current_date %}selected{% endif %}>{{ d }}</option>
         {% endfor %}
       </select>
     </form>
-    <form action="/search" method="get" class="search-form">
-      <input type="text" name="q" placeholder="{% if lang == 'zh' %}搜索需求...{% else %}Search demands...{% endif %}" class="search-input">
-      <button type="submit" class="search-btn">{% if lang == 'zh' %}搜索{% else %}Search{% endif %}</button>
-    </form>
   </div>
   {% endif %}
-  <main class="container">
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <button class="filter-chip active" data-filter="all">{% if lang == 'zh' %}全部{% else %}All{% endif %}</button>
+      <button class="filter-chip" data-filter="hn">HN</button>
+      <button class="filter-chip" data-filter="producthunt">Product Hunt</button>
+      <button class="filter-chip" data-filter="indiehackers">IndieHackers</button>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <button class="filter-chip" data-filter="score-8">{% if lang == 'zh' %}高分 8+{% else %}Score 8+{% endif %}</button>
+      <button class="filter-chip" data-filter="score-7">{% if lang == 'zh' %}中分 7+{% else %}Score 7+{% endif %}</button>
+      <button class="filter-chip" id="filter-fav-btn" data-filter="saved">{% if lang == 'zh' %}已收藏{% else %}Saved{% endif %}</button>
+    </div>
+    {% if is_pro %}
+    <form action="/search" method="get" class="search-inline">
+      <input type="text" name="q" placeholder="{% if lang == 'zh' %}搜索需求...{% else %}Search...{% endif %}">
+      <button type="submit">{% if lang == 'zh' %}搜索{% else %}Go{% endif %}</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Card Grid -->
+  <main class="grid">
     {% for item in items %}
     {% set sc = item.commercial_score %}
     {% set score_class = 8 if sc >= 8 else (7 if sc >= 7 else (6 if sc >= 6 else 5)) %}
-    <article class="card score-{{ score_class }}" data-url="{{ item.raw.url }}" data-score="{{ sc }}">
-      <div class="card-summary" tabindex="0" role="button" aria-expanded="false">
-        <div class="card-row1">
-          <span class="card-dot s{{ score_class }}" aria-hidden="true"></span>
-          <div class="card-title-wrap">
-            <h2 class="card-title">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</h2>
+    {% set src = item.raw.source | lower %}
+    <article class="card" data-url="{{ item.raw.url }}" data-score="{{ sc }}" data-source="{{ src }}">
+      <div class="card-header">
+        <div class="card-top-row">
+          <div class="card-badges">
+            <span class="source-badge {{ src }}">{{ item.raw.source }}</span>
+            {% if sc >= 8 %}
+            <span class="trend-indicator trend-hot">&#9650; {% if lang == 'zh' %}热门{% else %}Hot{% endif %}</span>
+            {% elif sc >= 7 %}
+            <span class="trend-indicator trend-rising">&#9650; {% if lang == 'zh' %}上升{% else %}Rising{% endif %}</span>
+            {% else %}
+            <span class="trend-indicator trend-normal">&#9679; {% if lang == 'zh' %}正常{% else %}Normal{% endif %}</span>
+            {% endif %}
           </div>
-          <span class="card-expand-icon" aria-hidden="true"></span>
-          <button type="button" class="fav-btn" data-url="{{ item.raw.url }}" aria-label="Save" title="Save">☆</button>
+          <div class="card-actions">
+            <button type="button" class="fav-btn" data-url="{{ item.raw.url }}" aria-label="Save" title="Save">&#9734;</button>
+          </div>
         </div>
-        <div class="card-row2">
-          <span>{{ item.raw.source }}</span>
-          <span>score {{ item.raw.score }}</span>
-          <span>comments {{ item.raw.comments }}</span>
-        </div>
-        <div class="card-summary-text">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</div>
+        <h2 class="card-title">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</h2>
+        <p class="card-desc">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</p>
       </div>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span class="card-meta-item">&#9650; {{ item.raw.score }}</span>
+          <span class="card-meta-item">&#128172; {{ item.raw.comments }}</span>
+          {% if item.build_days %}<span class="card-meta-item">&#128197; {{ item.build_days }}</span>{% endif %}
+        </div>
+        <div class="score-ring s{{ score_class }}">{{ sc }}</div>
+      </div>
+
+      <!-- Expanded Detail -->
       <div class="card-detail">
         <div class="card-detail-inner">
-          <div class="target-user-tag"><span data-i18n="target-user">{% if lang == 'zh' %}目标用户{% else %}Target User{% endif %}</span>: {% if lang == 'zh' %}{{ item.target_user_zh or item.target_user }}{% else %}{{ item.target_user }}{% endif %}</div>
-          <p class="product-idea">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</p>
-          <div class="score-grid">
-            {% set sd = item.score_detail or {} %}
-            {% set pl = (sd.get('pain_level', 0) or 0) %}
-            {% set ps = (sd.get('payment_signal', 0) or 0) %}
-            {% set ex = (sd.get('executability', 0) or 0) %}
-            {% set re = (sd.get('reach', 0) or 0) %}
-            <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="pain-level">{% if lang == 'zh' %}痛苦烈度{% else %}Pain Level{% endif %}</span>
-              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (pl / 3.0 * 100) | round(0) }}%"></div></div>
-              <span class="score-grid-value">{{ pl }}/3</span>
-            </div>
-            <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="pay-signal">{% if lang == 'zh' %}付费意愿{% else %}Pay Signal{% endif %}</span>
-              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ps / 3.0 * 100) | round(0) }}%"></div></div>
-              <span class="score-grid-value">{{ ps }}/3</span>
-            </div>
-            <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="buildability">{% if lang == 'zh' %}可执行性{% else %}Buildability{% endif %}</span>
-              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (ex / 2.0 * 100) | round(0) }}%"></div></div>
-              <span class="score-grid-value">{{ ex }}/2</span>
-            </div>
-            <div class="score-grid-item">
-              <span class="score-grid-label" data-i18n="reach">{% if lang == 'zh' %}获客渠道{% else %}Reach{% endif %}</span>
-              <div class="score-grid-track"><div class="score-grid-fill" style="width: {{ (re / 2.0 * 100) | round(0) }}%"></div></div>
-              <span class="score-grid-value">{{ re }}/2</span>
+          <div class="detail-section">
+            <div class="detail-label">{% if lang == 'zh' %}目标用户{% else %}Target User{% endif %}</div>
+            <div class="detail-text">{% if lang == 'zh' %}{{ item.target_user_zh or item.target_user }}{% else %}{{ item.target_user }}{% endif %}</div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">{% if lang == 'zh' %}产品构想{% else %}Product Idea{% endif %}</div>
+            <div class="detail-highlight">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">{% if lang == 'zh' %}评分细节{% else %}Score Breakdown{% endif %}</div>
+            <div class="score-grid">
+              {% set sd = item.score_detail or {} %}
+              {% set pl = (sd.get('pain_level', 0) or 0) %}
+              {% set ps = (sd.get('payment_signal', 0) or 0) %}
+              {% set ex = (sd.get('executability', 0) or 0) %}
+              {% set re = (sd.get('reach', 0) or 0) %}
+              <div class="score-bar-item">
+                <span class="score-bar-label">{% if lang == 'zh' %}痛苦烈度{% else %}Pain{% endif %}</span>
+                <div class="score-bar-track"><div class="score-bar-fill accent" style="width:{{ (pl / 3.0 * 100)|round(0) }}%"></div></div>
+                <span class="score-bar-value">{{ pl }}/3</span>
+              </div>
+              <div class="score-bar-item">
+                <span class="score-bar-label">{% if lang == 'zh' %}付费意愿{% else %}Pay Signal{% endif %}</span>
+                <div class="score-bar-track"><div class="score-bar-fill green" style="width:{{ (ps / 3.0 * 100)|round(0) }}%"></div></div>
+                <span class="score-bar-value">{{ ps }}/3</span>
+              </div>
+              <div class="score-bar-item">
+                <span class="score-bar-label">{% if lang == 'zh' %}可执行性{% else %}Buildability{% endif %}</span>
+                <div class="score-bar-track"><div class="score-bar-fill amber" style="width:{{ (ex / 2.0 * 100)|round(0) }}%"></div></div>
+                <span class="score-bar-value">{{ ex }}/2</span>
+              </div>
+              <div class="score-bar-item">
+                <span class="score-bar-label">{% if lang == 'zh' %}获客渠道{% else %}Reach{% endif %}</span>
+                <div class="score-bar-track"><div class="score-bar-fill blue" style="width:{{ (re / 2.0 * 100)|round(0) }}%"></div></div>
+                <span class="score-bar-value">{{ re }}/2</span>
+              </div>
             </div>
           </div>
-          <div class="score-reason-text">{% if lang == 'zh' %}{{ item.score_reason_zh or item.score_reason }}{% else %}{{ item.score_reason }}{% endif %}</div>
+          <div class="detail-section">
+            <div class="detail-label">{% if lang == 'zh' %}评分理由{% else %}Score Reason{% endif %}</div>
+            <div class="detail-text">{% if lang == 'zh' %}{{ item.score_reason_zh or item.score_reason }}{% else %}{{ item.score_reason }}{% endif %}</div>
+          </div>
           {% if item.build_days or (item.tool_plan and item.tool_plan|length > 0) or item.cost_estimate or item.biggest_risk %}
-          <div class="exec-plan-block">
-            <div class="exec-plan-label" data-i18n="build-plan">{% if lang == 'zh' %}执行方案{% else %}Build Plan{% endif %}</div>
-            <div class="exec-plan-content">
-              {% if item.build_days %}<div class="build-days"><span data-i18n="eta">{% if lang == 'zh' %}预计天数{% else %}ETA{% endif %}</span>: {% if lang == 'zh' %}{{ item.build_days_zh or item.build_days }}{% else %}{{ item.build_days }}{% endif %}</div>{% endif %}
-              {% set tp_display = (item.tool_plan_zh if lang == 'zh' and item.tool_plan_zh) or item.tool_plan %}
-              {% if tp_display and tp_display|length > 0 %}
-              <div class="tool-tags">
-                {% for entry in tp_display %}
-                {% set tool_slug = (entry.tool | lower | replace(' ', '-') | replace('.', '-')) %}
-                <span class="tool-tag tool-{{ tool_slug }}"><span class="tool-name">{{ entry.tool }}</span>: {{ entry.role }}</span>
-                {% endfor %}
-              </div>
-              {% endif %}
-              {% if item.cost_estimate %}<div class="cost-estimate"><span data-i18n="cost">{% if lang == 'zh' %}成本{% else %}Cost{% endif %}</span>: {% if lang == 'zh' %}{{ item.cost_estimate_zh or item.cost_estimate }}{% else %}{{ item.cost_estimate }}{% endif %}</div>{% endif %}
-              {% if item.biggest_risk %}<div class="biggest-risk"><span data-i18n="risk">{% if lang == 'zh' %}风险{% else %}Risk{% endif %}</span>: {% if lang == 'zh' %}{{ item.biggest_risk_zh or item.biggest_risk }}{% else %}{{ item.biggest_risk }}{% endif %}</div>{% endif %}
+          <div class="detail-section">
+            <div class="detail-label">{% if lang == 'zh' %}执行方案{% else %}Build Plan{% endif %}</div>
+            <div class="detail-text">
+              {% if item.build_days %}{% if lang == 'zh' %}预计天数{% else %}ETA{% endif %}: {% if lang == 'zh' %}{{ item.build_days_zh or item.build_days }}{% else %}{{ item.build_days }}{% endif %}{% endif %}
+              {% if item.cost_estimate %} &middot; {% if lang == 'zh' %}成本{% else %}Cost{% endif %}: {% if lang == 'zh' %}{{ item.cost_estimate_zh or item.cost_estimate }}{% else %}{{ item.cost_estimate }}{% endif %}{% endif %}
+              {% if item.biggest_risk %} &middot; {% if lang == 'zh' %}风险{% else %}Risk{% endif %}: {% if lang == 'zh' %}{{ item.biggest_risk_zh or item.biggest_risk }}{% else %}{{ item.biggest_risk }}{% endif %}{% endif %}
             </div>
+            {% set tp_display = (item.tool_plan_zh if lang == 'zh' and item.tool_plan_zh) or item.tool_plan %}
+            {% if tp_display and tp_display|length > 0 %}
+            <div class="tool-tags">
+              {% for entry in tp_display %}
+              {% set tool_slug = (entry.tool | lower | replace(' ', '-') | replace('.', '-')) %}
+              <span class="tool-tag tool-{{ tool_slug }}"><span class="tool-name">{{ entry.tool }}</span>: {{ entry.role }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
           </div>
           {% endif %}
-          <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="link-btn" data-i18n="source">{% if lang == 'zh' %}原文链接{% else %}Source{% endif %}</a>
+          <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="source-link">{% if lang == 'zh' %}查看原文 &#8599;{% else %}View Source &#8599;{% endif %}</a>
         </div>
       </div>
     </article>
-    {% if loop.first %}<div class="card-hint" id="card-hint" data-i18n="hint">{% if lang == 'zh' %}点击展开{% else %}Click to expand{% endif %}</div>{% endif %}
     {% endfor %}
+
     {% if has_more is defined and has_more %}
     <div class="paywall-overlay">
       <div class="paywall-blur">
-        <div class="paywall-card"></div>
-        <div class="paywall-card"></div>
-        <div class="paywall-card"></div>
+        <div class="paywall-ghost"></div>
+        <div class="paywall-ghost"></div>
+        <div class="paywall-ghost"></div>
+        <div class="paywall-ghost"></div>
       </div>
       <div class="paywall-cta">
         {% if is_visitor %}
-          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求{% else %}{{ blurred_count }} more demands today{% endif %}</p>
-          <a href="/auth/google" class="cta-btn">{% if lang == 'zh' %}登录查看更多{% else %}Sign in to see more{% endif %}</a>
+          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求等你发现{% else %}{{ blurred_count }} more demand signals today{% endif %}</p>
+          <a href="/auth/google" class="cta-btn">{% if lang == 'zh' %}免费登录查看更多{% else %}Sign in free to see more{% endif %}</a>
         {% elif is_free %}
-          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求{% else %}{{ blurred_count }} more demands today{% endif %}</p>
+          <p>{% if lang == 'zh' %}还有 {{ blurred_count }} 条需求等你发现{% else %}{{ blurred_count }} more demand signals today{% endif %}</p>
           <a href="/pricing" class="cta-btn">{% if lang == 'zh' %}升级 Pro — $9/月{% else %}Upgrade to Pro — $9/mo{% endif %}</a>
         {% endif %}
       </div>
     </div>
     {% endif %}
   </main>
+
   <script>
-    (function() {
-      var KEY = "demand-radar-favorites";
-      var currentLang = document.documentElement.lang === "zh" ? "zh" : "en";
-      var showFavOnly = false;
+  (function() {
+    var KEY = "demand-radar-favorites";
+    var activeFilter = "all";
 
-      var FILTER_LABELS = {
-        en: { on: "Show All", off: "Saved Only" },
-        zh: { on: "显示全部", off: "只看收藏" }
-      };
+    function getFavorites() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+      catch(e) { return []; }
+    }
+    function setFavorites(arr) { localStorage.setItem(KEY, JSON.stringify(arr)); }
+    function updateFavCount() {
+      var el = document.getElementById("fav-count");
+      if (el) el.textContent = getFavorites().length;
+    }
 
-      function getFavorites() {
-        try {
-          var raw = localStorage.getItem(KEY);
-          return raw ? JSON.parse(raw) : [];
-        } catch (e) { return []; }
-      }
-      function setFavorites(arr) {
-        localStorage.setItem(KEY, JSON.stringify(arr));
-      }
-      function updateFavCount() {
-        var n = getFavorites().length;
-        var el = document.getElementById("fav-count");
-        if (el) el.textContent = n;
-      }
-      function applyFavState() {
-        var favs = getFavorites();
-        document.querySelectorAll(".fav-btn").forEach(function(btn) {
-          var url = btn.getAttribute("data-url");
-          if (favs.indexOf(url) !== -1) {
-            btn.classList.add("fav-active");
-            btn.textContent = "★";
-          } else {
-            btn.classList.remove("fav-active");
-            btn.textContent = "☆";
-          }
-        });
-        updateFavCount();
-      }
-      function filterView(favOnly) {
-        var favs = getFavorites();
-        document.querySelectorAll(".card").forEach(function(card) {
-          var url = card.getAttribute("data-url");
-          if (favOnly) card.classList.toggle("card-hidden", favs.indexOf(url) === -1);
-          else card.classList.remove("card-hidden");
-        });
-      }
+    function applyFilter() {
+      var favs = getFavorites();
+      document.querySelectorAll(".card").forEach(function(card) {
+        var source = (card.getAttribute("data-source") || "").toLowerCase();
+        var score = parseInt(card.getAttribute("data-score") || "0", 10);
+        var url = card.getAttribute("data-url");
+        var show = true;
 
-      document.addEventListener("DOMContentLoaded", function() {
-        applyFavState();
-        var hint = document.getElementById("card-hint");
-        if (hint) setTimeout(function() { hint.style.display = "none"; }, 5000);
-
-        var filterBtn = document.getElementById("filter-fav-btn");
-
-        if (filterBtn) {
-          filterBtn.addEventListener("click", function() {
-            showFavOnly = !showFavOnly;
-            filterView(showFavOnly);
-            var labels = FILTER_LABELS[currentLang] || FILTER_LABELS.en;
-            filterBtn.textContent = showFavOnly ? labels.on : labels.off;
-          });
+        if (activeFilter === "saved") {
+          show = favs.indexOf(url) !== -1;
+        } else if (activeFilter === "score-8") {
+          show = score >= 8;
+        } else if (activeFilter === "score-7") {
+          show = score >= 7;
+        } else if (activeFilter !== "all") {
+          show = source === activeFilter;
         }
 
-        document.querySelectorAll(".card-summary").forEach(function(summary) {
-          var icon = summary.querySelector(".card-expand-icon");
-          if (icon) icon.setAttribute("aria-hidden", "true");
-          summary.addEventListener("click", function(e) {
-            if (e.target.classList.contains("fav-btn")) return;
-            var card = summary.closest(".card");
-            if (card) {
-              var open = card.classList.toggle("expanded");
-              summary.setAttribute("aria-expanded", open);
-            }
-          });
-        });
+        card.classList.toggle("card-hidden", !show);
+      });
+    }
 
-        document.querySelectorAll(".fav-btn").forEach(function(btn) {
-          btn.addEventListener("click", function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var url = btn.getAttribute("data-url");
-            var favs = getFavorites();
-            var i = favs.indexOf(url);
-            if (i === -1) favs.push(url);
-            else favs.splice(i, 1);
-            setFavorites(favs);
-            var isFav = favs.indexOf(url) !== -1;
-            btn.classList.toggle("fav-active", isFav);
-            btn.textContent = isFav ? "★" : "☆";
-            btn.classList.add("pop");
-            setTimeout(function() { btn.classList.remove("pop"); }, 300);
-            updateFavCount();
-            if (showFavOnly) filterView(true);
-          });
+    function applyFavState() {
+      var favs = getFavorites();
+      document.querySelectorAll(".fav-btn").forEach(function(btn) {
+        var url = btn.getAttribute("data-url");
+        var isFav = favs.indexOf(url) !== -1;
+        btn.classList.toggle("fav-active", isFav);
+        btn.innerHTML = isFav ? "&#9733;" : "&#9734;";
+      });
+      updateFavCount();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      applyFavState();
+
+      // Filter chips
+      document.querySelectorAll(".filter-chip").forEach(function(chip) {
+        chip.addEventListener("click", function() {
+          document.querySelectorAll(".filter-chip").forEach(function(c) { c.classList.remove("active"); });
+          chip.classList.add("active");
+          activeFilter = chip.getAttribute("data-filter");
+          applyFilter();
         });
       });
-    })();
+
+      // Card expand/collapse
+      document.querySelectorAll(".card").forEach(function(card) {
+        card.addEventListener("click", function(e) {
+          if (e.target.closest(".fav-btn") || e.target.closest("a") || e.target.closest("button:not(.fav-btn)") || e.target.closest("form")) return;
+          card.classList.toggle("expanded");
+        });
+      });
+
+      // Favorite toggle
+      document.querySelectorAll(".fav-btn").forEach(function(btn) {
+        btn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var url = btn.getAttribute("data-url");
+          var favs = getFavorites();
+          var i = favs.indexOf(url);
+          if (i === -1) favs.push(url); else favs.splice(i, 1);
+          setFavorites(favs);
+          var isFav = favs.indexOf(url) !== -1;
+          btn.classList.toggle("fav-active", isFav);
+          btn.innerHTML = isFav ? "&#9733;" : "&#9734;";
+          btn.classList.add("pop");
+          setTimeout(function() { btn.classList.remove("pop"); }, 300);
+          updateFavCount();
+          if (activeFilter === "saved") applyFilter();
+        });
+      });
+    });
+  })();
   </script>
 </body>
 </html>

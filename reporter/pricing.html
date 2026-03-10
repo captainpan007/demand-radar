@@ -4,67 +4,93 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Demand Radar Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0F0F0F; --card: #161616; --border: #222;
-      --text-primary: #F0F0F0; --text-secondary: #999; --text-muted: #888;
-      --accent: #4F6EF7; --accent-dim: rgba(79,110,247,0.1);
+      --bg: #09090B; --surface: #111113; --card: #16161A;
+      --border: #27272A; --border-light: #3F3F46;
+      --text-primary: #FAFAFA; --text-secondary: #A1A1AA; --text-muted: #71717A;
+      --accent: #6366F1; --accent-light: #818CF8; --accent-dim: rgba(99,102,241,0.12);
+      --green: #34D399;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
-    .container { max-width: 480px; margin: 0 auto; padding: 60px 20px; text-align: center; }
-    .back-link { font-size: 13px; color: var(--text-muted); text-decoration: none; display: inline-block; margin-bottom: 32px; }
-    .back-link:hover { color: var(--text-primary); }
-    h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
-    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
-    .pricing-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 32px 24px; text-align: left;
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg); color: var(--text-primary); min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
-    .plan-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .plan-price { font-size: 36px; font-weight: 600; margin-bottom: 4px; }
-    .plan-price span { font-size: 14px; font-weight: 400; color: var(--text-muted); }
-    .plan-features { list-style: none; margin: 20px 0 24px; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 480px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+    .back-link {
+      font-size: 13px; color: var(--text-muted); display: inline-block; margin-bottom: 32px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text-primary); }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 36px; line-height: 1.5; }
+    .pricing-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 36px 28px; text-align: left;
+      position: relative; overflow: hidden;
+    }
+    .pricing-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, #A855F7 100%);
+    }
+    .plan-name { font-size: 14px; font-weight: 600; color: var(--accent-light); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .plan-price { font-size: 42px; font-weight: 700; margin-bottom: 4px; }
+    .plan-price span { font-size: 15px; font-weight: 400; color: var(--text-muted); }
+    .plan-features { list-style: none; margin: 24px 0 28px; }
     .plan-features li {
-      font-size: 14px; color: var(--text-secondary); padding: 6px 0;
-      border-bottom: 1px solid var(--border);
+      font-size: 14px; color: var(--text-secondary); padding: 10px 0;
+      border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
     }
     .plan-features li:last-child { border-bottom: none; }
-    .plan-features li::before { content: "✓ "; color: var(--accent); font-weight: 600; }
+    .check-icon {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(52,211,153,0.12); color: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
     .checkout-btn {
-      display: block; width: 100%; padding: 14px; background: var(--accent);
-      color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 500;
-      cursor: pointer; text-decoration: none; text-align: center;
-      font-family: 'Inter', sans-serif;
+      display: block; width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--accent) 0%, #A855F7 100%);
+      color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+      cursor: pointer; text-align: center; font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
     }
     .checkout-btn:hover { opacity: 0.9; }
+    .checkout-btn.disabled {
+      background: var(--border); cursor: default; opacity: 0.6;
+    }
     .guarantee { font-size: 12px; color: var(--text-muted); margin-top: 16px; text-align: center; }
-    {% if user and user.tier == 'pro' %}
-    .already-pro { color: var(--accent); font-size: 14px; margin-top: 20px; text-align: center; }
-    {% endif %}
+    .already-pro {
+      color: var(--accent-light); font-size: 14px; text-align: center; padding: 14px;
+      background: var(--accent-dim); border-radius: 10px; font-weight: 500;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="/" class="back-link">← Back to Demand Radar</a>
+    <a href="/" class="back-link">&#8592; Back to Demand Radar</a>
     <h1>Demand Radar Pro</h1>
-    <p class="subtitle">Unlimited access to demand signals for indie developers</p>
+    <p class="subtitle">Unlimited access to demand signals for indie developers.<br>Find your next product idea faster.</p>
     <div class="pricing-card">
-      <div class="plan-name">Pro</div>
+      <div class="plan-name">Pro Plan</div>
       <div class="plan-price">$9 <span>/month</span></div>
       <ul class="plan-features">
-        <li>Unlimited daily demand signals</li>
-        <li>Access all historical reports</li>
-        <li>Search across all demands by keyword</li>
-        <li>Date-based report browsing</li>
+        <li><span class="check-icon">&#10003;</span> Unlimited daily demand signals</li>
+        <li><span class="check-icon">&#10003;</span> Access all historical reports</li>
+        <li><span class="check-icon">&#10003;</span> Search across all demands by keyword</li>
+        <li><span class="check-icon">&#10003;</span> Date-based report browsing</li>
+        <li><span class="check-icon">&#10003;</span> Priority support</li>
       </ul>
       {% if user and is_pro %}
-        <div class="already-pro" style="color: var(--accent); font-size: 14px; text-align: center; padding: 14px;">You're already a Pro member!</div>
+        <div class="already-pro">You're already a Pro member!</div>
       {% elif checkout_url %}
         <a href="{{ checkout_url }}?checkout[custom][user_email]={% if user %}{{ user.email }}{% endif %}&checkout[success_url]={{ base_url }}/" class="checkout-btn">Subscribe Now</a>
       {% else %}
-        <div class="checkout-btn" style="background: var(--border); cursor: default;">Coming Soon</div>
+        <div class="checkout-btn disabled">Coming Soon</div>
       {% endif %}
       <p class="guarantee">Cancel anytime. No questions asked.</p>
     </div>
