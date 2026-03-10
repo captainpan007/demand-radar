@@ -14,6 +14,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import config
 from config import SECRET_KEY
 from auth import router as auth_router
+from webhook import router as webhook_router
 from database import Session as DBSession
 from database import User, init_db, get_session_factory
 from pipeline import run_pipeline_sync, run_pipeline
@@ -49,6 +50,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Demand Radar", lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 app.include_router(auth_router)
+app.include_router(webhook_router)
 
 
 def get_db():
