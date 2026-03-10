@@ -199,6 +199,37 @@ async def history(
     )
 
 
+@app.get("/search", response_class=HTMLResponse)
+async def search_page(
+    request: Request,
+    q: str = "",
+    lang: str = "en",
+    db: SASession = Depends(get_db),
+):
+    """Search demands for pro users."""
+    user = get_current_user(request, db)
+    if not user or user["tier"] != "pro":
+        return RedirectResponse("/pricing")
+
+    results = []
+    if q.strip():
+        from storage import search_demands
+        results = search_demands(db, q.strip(), limit=50)
+
+    return templates.TemplateResponse(
+        "search.html",
+        {
+            "request": request,
+            "query": q,
+            "results": results,
+            "count": len(results),
+            "lang": lang,
+            "user": user,
+            "is_pro": True,
+        },
+    )
+
+
 @app.post("/admin/run-pipeline")
 async def trigger_pipeline():
     """Manual trigger for testing."""

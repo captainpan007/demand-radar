@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="{{ lang | default('en') }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if lang == 'zh' %}搜索 — 需求雷达{% else %}Search — Demand Radar{% endif %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F0F0F; --card: #161616; --border: #222;
+      --text-primary: #F0F0F0; --text-secondary: #999; --text-muted: #888;
+      --accent: #4F6EF7; --accent-dim: rgba(79,110,247,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+    .container { max-width: 680px; margin: 0 auto; padding: 28px 20px 48px; }
+    .back-link { font-size: 13px; color: var(--text-muted); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+    .back-link:hover { color: var(--text-primary); }
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+    .search-form { display: flex; gap: 8px; margin-bottom: 24px; }
+    .search-input {
+      flex: 1; background: var(--card); color: var(--text-primary); border: 1px solid var(--border);
+      padding: 10px 14px; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-btn {
+      background: var(--accent); color: #fff; border: none; padding: 10px 20px;
+      border-radius: 6px; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .search-btn:hover { opacity: 0.9; }
+    .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    .card {
+      background: var(--card); border-left: 4px solid var(--border);
+      padding: 14px 20px; margin-bottom: 2px;
+    }
+    .card-title { font-size: 16px; font-weight: 600; color: #CCC; margin-bottom: 6px; }
+    .card-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .card-meta span { margin-right: 12px; }
+    .card-body { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .card-link { font-size: 12px; color: var(--accent); text-decoration: none; margin-top: 8px; display: inline-block; }
+    .card-link:hover { text-decoration: underline; }
+    .no-results { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← {% if lang == 'zh' %}返回首页{% else %}Back to home{% endif %}</a>
+    <h1>{% if lang == 'zh' %}搜索需求{% else %}Search Demands{% endif %}</h1>
+    <form action="/search" method="get" class="search-form">
+      <input type="hidden" name="lang" value="{{ lang }}">
+      <input type="text" name="q" value="{{ query }}" placeholder="{% if lang == 'zh' %}输入关键词...{% else %}Enter keywords...{% endif %}" class="search-input" autofocus>
+      <button type="submit" class="search-btn">{% if lang == 'zh' %}搜索{% else %}Search{% endif %}</button>
+    </form>
+    {% if query %}
+    <div class="result-count">{% if lang == 'zh' %}找到 {{ count }} 条结果{% else %}{{ count }} results found{% endif %}</div>
+    {% endif %}
+    {% if results %}
+      {% for item in results %}
+      <div class="card">
+        <h2 class="card-title">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</h2>
+        <div class="card-meta">
+          <span>{{ item.raw.source }}</span>
+          <span>score {{ item.commercial_score }}</span>
+        </div>
+        <p class="card-body">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</p>
+        <a href="{{ item.raw.url }}" target="_blank" rel="noopener" class="card-link">{% if lang == 'zh' %}原文链接{% else %}Source{% endif %}</a>
+      </div>
+      {% endfor %}
+    {% elif query %}
+      <div class="no-results">{% if lang == 'zh' %}没有找到匹配的需求{% else %}No matching demands found{% endif %}</div>
+    {% endif %}
+  </div>
+</body>
+</html>
