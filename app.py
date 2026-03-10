@@ -8,9 +8,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session as SASession
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 import config
 from database import Session as DBSession
 from database import User, init_db, get_session_factory
+from pipeline import run_pipeline_sync, run_pipeline
 from storage import get_demands_by_date
 
 # Global session factory, initialized on startup
@@ -25,7 +28,19 @@ async def lifespan(app: FastAPI):
     global SessionFactory
     engine = init_db()
     SessionFactory = get_session_factory(engine)
+    print("[app] Database initialized")
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(
+        run_pipeline_sync, "cron", hour=6, minute=0,
+        args=[SessionFactory], id="daily_scrape",
+    )
+    scheduler.start()
+    print("[app] Scheduler started (daily at 06:00 UTC)")
+
     yield
+
+    scheduler.shutdown()
 
 
 app = FastAPI(title="Demand Radar", lifespan=lifespan)
@@ -123,6 +138,13 @@ async def index(
             "is_pro": is_pro,
         },
     )
+
+
+@app.post("/admin/run-pipeline")
+async def trigger_pipeline():
+    """Manual trigger for testing."""
+    stats = await run_pipeline(SessionFactory)
+    return stats
 
 
 if __name__ == "__main__":
