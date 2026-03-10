@@ -68,7 +68,7 @@ def get_current_user(request: Request, db: SASession = Depends(get_db)):
     if not token:
         return None
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     db_session = db.query(DBSession).filter(DBSession.token == token).first()
     if not db_session or db_session.expires_at < now:
         return None

@@ -35,12 +35,12 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     tier: Mapped[str] = mapped_column(String, default="free", nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        DateTime, default=lambda: datetime.utcnow(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.utcnow(),
+        onupdate=lambda: datetime.utcnow(),
         nullable=False,
     )
 
@@ -62,7 +62,7 @@ class Subscription(Base):
     status: Mapped[str] = mapped_column(String, default="active", nullable=False)
     current_period_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        DateTime, default=lambda: datetime.utcnow(), nullable=False
     )
 
 
@@ -101,7 +101,7 @@ class Demand(Base):
     cost_estimate_zh: Mapped[str | None] = mapped_column(String, nullable=True)
     biggest_risk_zh: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        DateTime, default=lambda: datetime.utcnow(), nullable=False
     )
 
 
