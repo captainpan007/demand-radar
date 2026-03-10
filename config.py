@@ -25,3 +25,17 @@ AI_TOOLS = [
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 PRODUCTHUNT_API_KEY = os.environ.get("PRODUCTHUNT_API_KEY", "")
+
+# Web app
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
+
+# Lemon Squeezy
+LEMON_SQUEEZY_SIGNING_SECRET = os.environ.get("LEMON_SQUEEZY_SIGNING_SECRET", "")
+LEMON_SQUEEZY_CHECKOUT_URL = os.environ.get("LEMON_SQUEEZY_CHECKOUT_URL", "")
+
+# Access limits
+VISITOR_LIMIT = 3
+FREE_LIMIT = 5
