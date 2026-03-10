@@ -101,14 +101,14 @@ def save_demands(session, items: list[DemandItem], report_date=None) -> int:
             tool_plan=json.dumps(item.tool_plan) if item.tool_plan else None,
             cost_estimate=item.cost_estimate,
             biggest_risk=item.biggest_risk,
-            demand_summary_zh=item.demand_summary_zh,
-            target_user_zh=item.target_user_zh,
-            product_idea_zh=item.product_idea_zh,
-            score_reason_zh=item.score_reason_zh,
-            build_days_zh=item.build_days_zh,
-            tool_plan_zh=json.dumps(item.tool_plan_zh) if item.tool_plan_zh else None,
-            cost_estimate_zh=item.cost_estimate_zh,
-            biggest_risk_zh=item.biggest_risk_zh,
+            demand_summary_zh=getattr(item, 'demand_summary_zh', None),
+            target_user_zh=getattr(item, 'target_user_zh', None),
+            product_idea_zh=getattr(item, 'product_idea_zh', None),
+            score_reason_zh=getattr(item, 'score_reason_zh', None),
+            build_days_zh=getattr(item, 'build_days_zh', None),
+            tool_plan_zh=json.dumps(tp_zh) if (tp_zh := getattr(item, 'tool_plan_zh', None)) else None,
+            cost_estimate_zh=getattr(item, 'cost_estimate_zh', None),
+            biggest_risk_zh=getattr(item, 'biggest_risk_zh', None),
         )
         session.add(row)
         session.flush()  # get the row id
