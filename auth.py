@@ -64,7 +64,7 @@ async def google_callback(request: Request):
         db_sess = DBSession(
             token=session_token,
             user_id=user.id,
-            expires_at=datetime.now(timezone.utc) + timedelta(days=30),
+            expires_at=datetime.utcnow() + timedelta(days=30),
         )
         db.add(db_sess)
         db.commit()
