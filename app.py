@@ -7,10 +7,13 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session as SASession
+from starlette.middleware.sessions import SessionMiddleware
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import config
+from config import SECRET_KEY
+from auth import router as auth_router
 from database import Session as DBSession
 from database import User, init_db, get_session_factory
 from pipeline import run_pipeline_sync, run_pipeline
@@ -44,6 +47,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Demand Radar", lifespan=lifespan)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+app.include_router(auth_router)
 
 
 def get_db():
