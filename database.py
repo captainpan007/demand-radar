@@ -1,10 +1,10 @@
 """SQLAlchemy 2.0 database models and initialization for Demand Radar."""
 
-from datetime import datetime, timezone
+import os
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import (
-    Column,
     Date,
     DateTime,
     ForeignKey,
@@ -19,6 +19,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 DB_PATH = Path(__file__).parent / "data" / "demand_radar.db"
+
+
+def _is_sqlite(url: str) -> bool:
+    return url.startswith("sqlite")
 
 
 class Base(DeclarativeBase):
@@ -105,36 +109,55 @@ class Demand(Base):
     )
 
 
-def get_engine():
-    """Create SQLite engine at data/demand_radar.db with WAL mode and foreign keys."""
+def get_database_url() -> str:
+    """Return DATABASE_URL if set (PostgreSQL on Railway), else local SQLite."""
+    url = os.getenv("DATABASE_URL", "")
+    if url:
+        # Railway gives postgres:// but SQLAlchemy needs postgresql://
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return url
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
+    return f"sqlite:///{DB_PATH}"
 
-    @event.listens_for(engine, "connect")
-    def _set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
+
+def get_engine(url: str | None = None):
+    """Create engine for the given or default database URL."""
+    if url is None:
+        url = get_database_url()
+    engine = create_engine(url, echo=False, pool_pre_ping=True)
+
+    # SQLite-specific pragmas
+    if _is_sqlite(url):
+        @event.listens_for(engine, "connect")
+        def _set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
 
     return engine
 
 
 def init_db(engine=None):
-    """Create all tables and the FTS5 virtual table. Returns the engine."""
+    """Create all tables. For SQLite also creates FTS5 virtual table. Returns the engine."""
     if engine is None:
         engine = get_engine()
     Base.metadata.create_all(engine)
 
-    fts_sql = text(
-        "CREATE VIRTUAL TABLE IF NOT EXISTS demands_fts USING fts5("
-        "demand_summary, product_idea, body, target_user, "
-        "content='demands', content_rowid='id')"
-    )
-    with engine.connect() as conn:
-        conn.execute(fts_sql)
-        conn.commit()
+    url = str(engine.url)
+    if _is_sqlite(url):
+        # SQLite FTS5 for local dev
+        fts_sql = text(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS demands_fts USING fts5("
+            "demand_summary, product_idea, body, target_user, "
+            "content='demands', content_rowid='id')"
+        )
+        with engine.connect() as conn:
+            conn.execute(fts_sql)
+            conn.commit()
 
+    print(f"[db] Initialized: {'PostgreSQL' if not _is_sqlite(url) else 'SQLite'}")
     return engine
 
 

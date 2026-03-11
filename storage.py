@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 from sqlalchemy import text
 
-from database import Demand
+from database import Demand, _is_sqlite
 from models import DemandItem, RawItem
 
 
@@ -77,6 +77,8 @@ def save_demands(session, items: list[DemandItem], report_date=None) -> int:
     )
     existing_urls = {row[0] for row in existing}
 
+    is_sqlite = _is_sqlite(str(session.bind.url))
+
     new_count = 0
     for item in items:
         url = item.raw.url
@@ -113,20 +115,21 @@ def save_demands(session, items: list[DemandItem], report_date=None) -> int:
         session.add(row)
         session.flush()  # get the row id
 
-        # Update FTS index
-        session.execute(
-            text(
-                "INSERT INTO demands_fts(rowid, demand_summary, product_idea, body, target_user) "
-                "VALUES (:rowid, :demand_summary, :product_idea, :body, :target_user)"
-            ),
-            {
-                "rowid": row.id,
-                "demand_summary": item.demand_summary or "",
-                "product_idea": item.product_idea or "",
-                "body": item.raw.body or "",
-                "target_user": item.target_user or "",
-            },
-        )
+        # Update FTS index (SQLite only)
+        if is_sqlite:
+            session.execute(
+                text(
+                    "INSERT INTO demands_fts(rowid, demand_summary, product_idea, body, target_user) "
+                    "VALUES (:rowid, :demand_summary, :product_idea, :body, :target_user)"
+                ),
+                {
+                    "rowid": row.id,
+                    "demand_summary": item.demand_summary or "",
+                    "product_idea": item.product_idea or "",
+                    "body": item.raw.body or "",
+                    "target_user": item.target_user or "",
+                },
+            )
 
         existing_urls.add(url)
         new_count += 1
@@ -155,27 +158,41 @@ def get_available_dates(session) -> list[date]:
 
 
 def search_demands(session, query: str, limit: int = 50) -> list[DemandItem]:
-    """FTS5 search across demand_summary, product_idea, body, target_user.
+    """Search demands. Uses FTS5 on SQLite, ILIKE on PostgreSQL."""
+    is_sqlite = _is_sqlite(str(session.bind.url))
 
-    Results sorted by commercial_score desc.
-    """
-    result = session.execute(
-        text(
-            "SELECT d.* FROM demands d "
-            "JOIN demands_fts fts ON d.id = fts.rowid "
-            "WHERE demands_fts MATCH :query "
-            "ORDER BY d.commercial_score DESC "
-            "LIMIT :limit"
-        ),
-        {"query": query, "limit": limit},
-    )
-    rows = result.fetchall()
-
-    # Convert raw rows to Demand objects
-    items = []
-    for row in rows:
-        demand = Demand()
-        for i, col in enumerate(result.keys()):
-            setattr(demand, col, row[i])
-        items.append(_row_to_demand_item(demand))
-    return items
+    if is_sqlite:
+        result = session.execute(
+            text(
+                "SELECT d.* FROM demands d "
+                "JOIN demands_fts fts ON d.id = fts.rowid "
+                "WHERE demands_fts MATCH :query "
+                "ORDER BY d.commercial_score DESC "
+                "LIMIT :limit"
+            ),
+            {"query": query, "limit": limit},
+        )
+        rows = result.fetchall()
+        items = []
+        for row in rows:
+            demand = Demand()
+            for i, col in enumerate(result.keys()):
+                setattr(demand, col, row[i])
+            items.append(_row_to_demand_item(demand))
+        return items
+    else:
+        # PostgreSQL: use ILIKE for simple text search
+        pattern = f"%{query}%"
+        rows = (
+            session.query(Demand)
+            .filter(
+                Demand.demand_summary.ilike(pattern)
+                | Demand.product_idea.ilike(pattern)
+                | Demand.body.ilike(pattern)
+                | Demand.target_user.ilike(pattern)
+            )
+            .order_by(Demand.commercial_score.desc())
+            .limit(limit)
+            .all()
+        )
+        return [_row_to_demand_item(r) for r in rows]

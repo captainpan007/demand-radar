@@ -5,7 +5,3 @@ dockerfilePath = "Dockerfile"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[[mounts]]
-source = "demand_radar_data"
-mountPath = "/app/data"
