@@ -276,28 +276,61 @@ def _check_admin(request: Request):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
+import threading
+
+_pipeline_status = {"running": False, "last_result": None}
+
+
+def _run_pipeline_background(session_factory, delete_today=False):
+    """Run pipeline in a background thread."""
+    import asyncio
+    _pipeline_status["running"] = True
+    try:
+        if delete_today:
+            from database import Demand
+            db = session_factory()
+            try:
+                today = date.today()
+                deleted = db.query(Demand).filter(Demand.report_date == today).delete()
+                db.commit()
+                print(f"[admin] Deleted {deleted} rows for today")
+            finally:
+                db.close()
+        result = asyncio.run(run_pipeline(session_factory))
+        _pipeline_status["last_result"] = result
+        print(f"[admin] Pipeline finished: {result}")
+    except Exception as e:
+        _pipeline_status["last_result"] = {"error": str(e)}
+        print(f"[admin] Pipeline failed: {e}")
+    finally:
+        _pipeline_status["running"] = False
+
+
 @app.post("/admin/run-pipeline")
 async def trigger_pipeline(request: Request):
-    """Manual trigger for testing. Requires ADMIN_TOKEN."""
+    """Manual trigger. Runs in background, returns immediately. Requires ADMIN_TOKEN."""
     _check_admin(request)
-    stats = await run_pipeline(SessionFactory)
-    return stats
+    if _pipeline_status["running"]:
+        return {"status": "already_running"}
+    threading.Thread(target=_run_pipeline_background, args=(SessionFactory,), daemon=True).start()
+    return {"status": "started"}
 
 
 @app.post("/admin/rerun-today")
 async def rerun_today(request: Request):
-    """Delete today's data and re-run pipeline. Requires ADMIN_TOKEN."""
+    """Delete today's data and re-run pipeline in background. Requires ADMIN_TOKEN."""
     _check_admin(request)
-    from database import Demand
-    db = SessionFactory()
-    try:
-        today = date.today()
-        deleted = db.query(Demand).filter(Demand.report_date == today).delete()
-        db.commit()
-    finally:
-        db.close()
-    stats = await run_pipeline(SessionFactory)
-    return {"deleted": deleted, **stats}
+    if _pipeline_status["running"]:
+        return {"status": "already_running"}
+    threading.Thread(target=_run_pipeline_background, args=(SessionFactory, True), daemon=True).start()
+    return {"status": "started", "note": "deleting today's data and re-running"}
+
+
+@app.get("/admin/pipeline-status")
+async def pipeline_status(request: Request):
+    """Check pipeline status. Requires ADMIN_TOKEN."""
+    _check_admin(request)
+    return _pipeline_status
 
 
 if __name__ == "__main__":
