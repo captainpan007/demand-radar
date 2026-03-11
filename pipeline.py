@@ -8,6 +8,7 @@ from datetime import date
 from config import DEEPSEEK_API_KEY, MOONSHOT_API_KEY
 from processor.cleaner import clean, deduplicate
 from processor.ai_filter import filter_demands
+from processor.translator import translate_demands
 from scrapers.g2 import scrape_g2
 from scrapers.hn import scrape_hn
 from scrapers.indiehackers import scrape_indiehackers
@@ -114,6 +115,12 @@ async def run_pipeline(session_factory) -> dict:
         demands = filter_demands(items, executor)
     qualified = len(demands)
     print(f"  qualified demands: {qualified}")
+
+    # --- Stage 3.5: Translate to Chinese ---
+    print("\n=== Pipeline Stage 3.5: Translate to Chinese ===")
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        translated = translate_demands(demands, executor)
+    print(f"  translated: {translated}/{qualified}")
 
     # --- Stage 4: Save to DB ---
     print("\n=== Pipeline Stage 4: Save to DB ===")
