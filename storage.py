@@ -182,7 +182,9 @@ def search_demands(session, query: str, limit: int = 50) -> list[DemandItem]:
         return items
     else:
         # PostgreSQL: use ILIKE for simple text search
-        pattern = f"%{query}%"
+        # Escape LIKE wildcards in user input
+        escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
         rows = (
             session.query(Demand)
             .filter(

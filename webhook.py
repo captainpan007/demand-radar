@@ -16,7 +16,8 @@ def verify_signature(payload: bytes, signature: str) -> bool:
     """Verify HMAC-SHA256 signature from Lemon Squeezy."""
     secret = os.getenv("LEMON_SQUEEZY_SIGNING_SECRET", "")
     if not secret:
-        return True  # skip in dev when no secret configured
+        print("[webhook] WARNING: LEMON_SQUEEZY_SIGNING_SECRET not set, rejecting request")
+        return False  # fail closed: reject if no secret configured
     digest = hmac.new(
         secret.encode(), payload, hashlib.sha256
     ).hexdigest()

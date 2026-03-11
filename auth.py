@@ -29,7 +29,7 @@ def _get_oauth(request: Request):
 
 @router.get("/google")
 async def google_login(request: Request):
-    print(f"[auth] GOOGLE_CLIENT_ID: {os.getenv('GOOGLE_CLIENT_ID', 'NOT FOUND')[:20]}...")
+    print(f"[auth] Google login initiated (client_id configured: {bool(os.getenv('GOOGLE_CLIENT_ID'))})")
     oauth = _get_oauth(request)
     redirect_uri = f"{BASE_URL}/auth/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
@@ -77,9 +77,11 @@ async def google_callback(request: Request):
         db.close()
 
     response = RedirectResponse("/")
+    is_prod = not BASE_URL.startswith("http://localhost")
     response.set_cookie(
         "session_token", session_token,
         max_age=30 * 24 * 3600, httponly=True, samesite="lax",
+        secure=is_prod,
     )
     return response
 

@@ -1,9 +1,10 @@
 """FastAPI web application for Demand Radar."""
 
+import os
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session as SASession
@@ -263,16 +264,30 @@ async def pricing(request: Request, db: SASession = Depends(get_db)):
     )
 
 
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
+
+
+def _check_admin(request: Request):
+    """Verify admin access via Bearer token."""
+    if not ADMIN_TOKEN:
+        raise HTTPException(status_code=503, detail="Admin not configured")
+    auth = request.headers.get("Authorization", "")
+    if auth != f"Bearer {ADMIN_TOKEN}":
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+
 @app.post("/admin/run-pipeline")
-async def trigger_pipeline():
-    """Manual trigger for testing."""
+async def trigger_pipeline(request: Request):
+    """Manual trigger for testing. Requires ADMIN_TOKEN."""
+    _check_admin(request)
     stats = await run_pipeline(SessionFactory)
     return stats
 
 
 @app.post("/admin/rerun-today")
-async def rerun_today():
-    """Delete today's data and re-run pipeline to fix truncated summaries."""
+async def rerun_today(request: Request):
+    """Delete today's data and re-run pipeline. Requires ADMIN_TOKEN."""
+    _check_admin(request)
     from database import Demand
     db = SessionFactory()
     try:
