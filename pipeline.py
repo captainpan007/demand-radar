@@ -5,7 +5,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
-from config import DEEPSEEK_API_KEY, MOONSHOT_API_KEY
+from config import DEEPSEEK_API_KEY
 from processor.cleaner import clean, deduplicate
 from processor.ai_filter import filter_demands
 from processor.translator import translate_demands
@@ -29,8 +29,6 @@ async def run_pipeline(session_factory) -> dict:
     -------
     dict with keys: total_raw, after_dedup, qualified, saved, elapsed
     """
-    if not MOONSHOT_API_KEY:
-        print("[pipeline] MOONSHOT_API_KEY not set, AI filtering will be skipped")
     if not DEEPSEEK_API_KEY:
         print("[pipeline] DEEPSEEK_API_KEY not set, AI scoring will be skipped")
 

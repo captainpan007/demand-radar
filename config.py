@@ -5,7 +5,6 @@ try:
 except ImportError:
     pass
 
-MOONSHOT_API_KEY = os.environ.get("MOONSHOT_API_KEY", "")
 REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", "")
 REDDIT_UA = os.environ.get("REDDIT_UA", "demand-radar/1.0")
