@@ -25,3 +25,12 @@ class DemandItem:
     score_detail: dict = field(default_factory=dict)  # pain_level, payment_signal, executability, reach
     cost_estimate: str = ""
     biggest_risk: str = ""
+    # Chinese translations (populated from DB, not from AI filter)
+    demand_summary_zh: str = ""
+    target_user_zh: str = ""
+    product_idea_zh: str = ""
+    score_reason_zh: str = ""
+    build_days_zh: str = ""
+    tool_plan_zh: list = field(default_factory=list)
+    cost_estimate_zh: str = ""
+    biggest_risk_zh: str = ""
