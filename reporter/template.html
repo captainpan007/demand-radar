@@ -182,7 +182,7 @@
     }
     .card:hover { background: var(--card-hover); border-color: var(--border-light); transform: translateY(-1px); }
     .card.card-hidden { display: none !important; }
-    .card.expanded { grid-column: 1 / -1; }
+    .card.expanded { }
 
     .card-header {
       padding: 16px 16px 12px;
@@ -228,13 +228,15 @@
     .card-title {
       font-size: 15px; font-weight: 600; color: var(--text-primary);
       line-height: 1.4; margin-bottom: 8px;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden; overflow-wrap: break-word; word-break: break-word;
+    }
+    .card:not(.expanded) .card-title {
+      max-height: 2.8em; overflow: hidden;
     }
     .card-desc {
       font-size: 13px; color: var(--text-secondary); line-height: 1.5;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden; overflow-wrap: break-word; word-break: break-word;
+    }
+    .card:not(.expanded) .card-desc {
+      max-height: 3em; overflow: hidden;
     }
     .card-footer {
       padding: 0 16px 14px;
@@ -275,9 +277,9 @@
       font-size: 11px; font-weight: 600; color: var(--text-muted);
       text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
     }
-    .detail-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .detail-text { font-size: 13px; color: #D4D4D8; line-height: 1.6; }
     .detail-highlight {
-      font-size: 14px; color: var(--text-primary); line-height: 1.7;
+      font-size: 14px; color: #E4E4E7; line-height: 1.7;
       background: var(--surface); padding: 12px 14px; border-radius: 8px;
       border-left: 3px solid var(--accent);
     }
@@ -287,7 +289,7 @@
     .score-bar-item {
       display: flex; align-items: center; gap: 8px; font-size: 12px;
     }
-    .score-bar-label { color: var(--text-muted); min-width: 80px; }
+    .score-bar-label { color: #B4B4BB; min-width: 80px; }
     .score-bar-track {
       flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
     }
@@ -607,8 +609,43 @@
       updateFavCount();
     }
 
+    function truncateAtWord(el, maxLines) {
+      var lineH = parseFloat(getComputedStyle(el).lineHeight);
+      var maxH = lineH * maxLines;
+      if (el.scrollHeight <= maxH + 2) return;
+      el.dataset.fullText = el.textContent;
+      var words = el.textContent.split(/\s+/);
+      while (words.length > 1 && el.scrollHeight > maxH + 2) {
+        words.pop();
+        el.textContent = words.join(" ") + "...";
+      }
+    }
+    function truncateCards() {
+      document.querySelectorAll(".card:not(.expanded)").forEach(function(card) {
+        var title = card.querySelector(".card-title");
+        var desc = card.querySelector(".card-desc");
+        if (title && !title.dataset.fullText) truncateAtWord(title, 2);
+        if (desc && !desc.dataset.fullText) truncateAtWord(desc, 2);
+      });
+    }
+    function restoreText(card) {
+      var title = card.querySelector(".card-title");
+      var desc = card.querySelector(".card-desc");
+      if (title && title.dataset.fullText) { title.textContent = title.dataset.fullText; delete title.dataset.fullText; }
+      if (desc && desc.dataset.fullText) { desc.textContent = desc.dataset.fullText; delete desc.dataset.fullText; }
+    }
+    function retruncateText(card) {
+      var title = card.querySelector(".card-title");
+      var desc = card.querySelector(".card-desc");
+      if (title && title.dataset.fullText) { title.textContent = title.dataset.fullText; delete title.dataset.fullText; }
+      if (desc && desc.dataset.fullText) { desc.textContent = desc.dataset.fullText; delete desc.dataset.fullText; }
+      truncateAtWord(title, 2);
+      truncateAtWord(desc, 2);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
       applyFavState();
+      truncateCards();
 
       // Filter chips
       document.querySelectorAll(".filter-chip").forEach(function(chip) {
@@ -624,7 +661,10 @@
       document.querySelectorAll(".card").forEach(function(card) {
         card.addEventListener("click", function(e) {
           if (e.target.closest(".fav-btn") || e.target.closest("a") || e.target.closest("button:not(.fav-btn)") || e.target.closest("form")) return;
+          var wasExpanded = card.classList.contains("expanded");
           card.classList.toggle("expanded");
+          if (wasExpanded) retruncateText(card);
+          else restoreText(card);
         });
       });
 
