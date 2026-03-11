@@ -229,14 +229,8 @@
       font-size: 15px; font-weight: 600; color: var(--text-primary);
       line-height: 1.4; margin-bottom: 8px;
     }
-    .card:not(.expanded) .card-title {
-      max-height: 2.8em; overflow: hidden;
-    }
     .card-desc {
       font-size: 13px; color: var(--text-secondary); line-height: 1.5;
-    }
-    .card:not(.expanded) .card-desc {
-      max-height: 3em; overflow: hidden;
     }
     .card-footer {
       padding: 0 16px 14px;
@@ -609,38 +603,41 @@
       updateFavCount();
     }
 
-    function truncateAtWord(el, maxLines) {
-      var lineH = parseFloat(getComputedStyle(el).lineHeight);
-      var maxH = lineH * maxLines;
-      if (el.scrollHeight <= maxH + 2) return;
-      el.dataset.fullText = el.textContent;
-      var words = el.textContent.split(/\s+/);
-      while (words.length > 1 && el.scrollHeight > maxH + 2) {
-        words.pop();
-        el.textContent = words.join(" ") + "...";
+    function truncateAtWord(el, maxChars) {
+      if (!el) return;
+      var text = el.textContent;
+      if (text.length <= maxChars) return;
+      el.dataset.fullText = text;
+      // Cut at maxChars, then back up to last space
+      var cut = text.substring(0, maxChars);
+      var lastSpace = cut.lastIndexOf(" ");
+      if (lastSpace > maxChars * 0.4) {
+        cut = cut.substring(0, lastSpace);
       }
+      // Remove trailing punctuation fragments
+      cut = cut.replace(/[,;:\-–—]\s*$/, "").trimEnd();
+      el.textContent = cut + "...";
     }
     function truncateCards() {
       document.querySelectorAll(".card:not(.expanded)").forEach(function(card) {
         var title = card.querySelector(".card-title");
         var desc = card.querySelector(".card-desc");
-        if (title && !title.dataset.fullText) truncateAtWord(title, 2);
-        if (desc && !desc.dataset.fullText) truncateAtWord(desc, 2);
+        if (title && !title.dataset.fullText) truncateAtWord(title, 80);
+        if (desc && !desc.dataset.fullText) truncateAtWord(desc, 120);
       });
     }
     function restoreText(card) {
-      var title = card.querySelector(".card-title");
-      var desc = card.querySelector(".card-desc");
-      if (title && title.dataset.fullText) { title.textContent = title.dataset.fullText; delete title.dataset.fullText; }
-      if (desc && desc.dataset.fullText) { desc.textContent = desc.dataset.fullText; delete desc.dataset.fullText; }
+      [".card-title", ".card-desc"].forEach(function(sel) {
+        var el = card.querySelector(sel);
+        if (el && el.dataset.fullText) { el.textContent = el.dataset.fullText; delete el.dataset.fullText; }
+      });
     }
     function retruncateText(card) {
+      restoreText(card);
       var title = card.querySelector(".card-title");
       var desc = card.querySelector(".card-desc");
-      if (title && title.dataset.fullText) { title.textContent = title.dataset.fullText; delete title.dataset.fullText; }
-      if (desc && desc.dataset.fullText) { desc.textContent = desc.dataset.fullText; delete desc.dataset.fullText; }
-      truncateAtWord(title, 2);
-      truncateAtWord(desc, 2);
+      truncateAtWord(title, 80);
+      truncateAtWord(desc, 120);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
