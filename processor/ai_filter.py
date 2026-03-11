@@ -150,7 +150,7 @@ def _analyze_one(client: OpenAI, item: RawItem, total: int, done_counter: list, 
         sd = {}
     return DemandItem(
         raw=item,
-        demand_summary=str(data.get("demand_summary", ""))[:50],
+        demand_summary=str(data.get("demand_summary", "")),
         target_user=str(data.get("target_user", "")),
         commercial_score=score,
         score_reason=str(data.get("score_reason", "")),
