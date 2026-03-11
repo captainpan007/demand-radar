@@ -26,6 +26,21 @@ SessionFactory = None
 templates = Jinja2Templates(directory="reporter")
 
 
+def truncate_words(text: str, max_chars: int = 90) -> str:
+    """Truncate text at a word boundary, never mid-word."""
+    if not text or len(text) <= max_chars:
+        return text or ""
+    cut = text[:max_chars]
+    last_space = cut.rfind(" ")
+    if last_space > max_chars * 0.3:
+        cut = cut[:last_space]
+    cut = cut.rstrip(" ,;:-")
+    return cut + "..."
+
+
+templates.env.filters["truncate_words"] = truncate_words
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize DB and session factory on startup."""

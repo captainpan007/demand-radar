@@ -452,8 +452,8 @@
             <button type="button" class="fav-btn" data-url="{{ item.raw.url }}" aria-label="Save" title="Save">&#9734;</button>
           </div>
         </div>
-        <h2 class="card-title">{% if lang == 'zh' %}{{ item.demand_summary_zh or item.demand_summary }}{% else %}{{ item.demand_summary }}{% endif %}</h2>
-        <p class="card-desc">{% if lang == 'zh' %}{{ item.product_idea_zh or item.product_idea }}{% else %}{{ item.product_idea }}{% endif %}</p>
+        <h2 class="card-title">{% if lang == 'zh' %}{{ (item.demand_summary_zh or item.demand_summary) | truncate_words(90) }}{% else %}{{ item.demand_summary | truncate_words(90) }}{% endif %}</h2>
+        <p class="card-desc">{% if lang == 'zh' %}{{ (item.product_idea_zh or item.product_idea) | truncate_words(130) }}{% else %}{{ item.product_idea | truncate_words(130) }}{% endif %}</p>
       </div>
       <div class="card-footer">
         <div class="card-meta">
@@ -603,46 +603,8 @@
       updateFavCount();
     }
 
-    function truncateAtWord(el, maxChars) {
-      if (!el) return;
-      var text = el.textContent;
-      if (text.length <= maxChars) return;
-      el.dataset.fullText = text;
-      // Cut at maxChars, then back up to last space
-      var cut = text.substring(0, maxChars);
-      var lastSpace = cut.lastIndexOf(" ");
-      if (lastSpace > maxChars * 0.4) {
-        cut = cut.substring(0, lastSpace);
-      }
-      // Remove trailing punctuation fragments
-      cut = cut.replace(/[,;:\-–—]\s*$/, "").trimEnd();
-      el.textContent = cut + "...";
-    }
-    function truncateCards() {
-      document.querySelectorAll(".card:not(.expanded)").forEach(function(card) {
-        var title = card.querySelector(".card-title");
-        var desc = card.querySelector(".card-desc");
-        if (title && !title.dataset.fullText) truncateAtWord(title, 80);
-        if (desc && !desc.dataset.fullText) truncateAtWord(desc, 120);
-      });
-    }
-    function restoreText(card) {
-      [".card-title", ".card-desc"].forEach(function(sel) {
-        var el = card.querySelector(sel);
-        if (el && el.dataset.fullText) { el.textContent = el.dataset.fullText; delete el.dataset.fullText; }
-      });
-    }
-    function retruncateText(card) {
-      restoreText(card);
-      var title = card.querySelector(".card-title");
-      var desc = card.querySelector(".card-desc");
-      truncateAtWord(title, 80);
-      truncateAtWord(desc, 120);
-    }
-
     document.addEventListener("DOMContentLoaded", function() {
       applyFavState();
-      truncateCards();
 
       // Filter chips
       document.querySelectorAll(".filter-chip").forEach(function(chip) {
@@ -658,10 +620,7 @@
       document.querySelectorAll(".card").forEach(function(card) {
         card.addEventListener("click", function(e) {
           if (e.target.closest(".fav-btn") || e.target.closest("a") || e.target.closest("button:not(.fav-btn)") || e.target.closest("form")) return;
-          var wasExpanded = card.classList.contains("expanded");
           card.classList.toggle("expanded");
-          if (wasExpanded) retruncateText(card);
-          else restoreText(card);
         });
       });
 
