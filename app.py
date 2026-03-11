@@ -270,6 +270,21 @@ async def trigger_pipeline():
     return stats
 
 
+@app.post("/admin/rerun-today")
+async def rerun_today():
+    """Delete today's data and re-run pipeline to fix truncated summaries."""
+    from database import Demand
+    db = SessionFactory()
+    try:
+        today = date.today()
+        deleted = db.query(Demand).filter(Demand.report_date == today).delete()
+        db.commit()
+    finally:
+        db.close()
+    stats = await run_pipeline(SessionFactory)
+    return {"deleted": deleted, **stats}
+
+
 if __name__ == "__main__":
     import uvicorn
 
