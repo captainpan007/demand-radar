@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Demand Radar — Weekly Top 10</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f5;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+
+<!-- Outer wrapper -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f5;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+
+      <!-- Main container -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:680px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+        <!-- ============ HEADER ============ -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#09090B 0%,#1e1b4b 100%);padding:36px 32px 28px 32px;text-align:center;">
+            <!-- Logo / Brand -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" style="padding-bottom:8px;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:#6366F1;margin-right:4px;"></span>
+                  <span style="font-size:24px;font-weight:700;color:#FAFAFA;letter-spacing:-0.5px;">Demand Radar</span>
+                  <span style="font-size:14px;color:#818CF8;margin-left:8px;font-weight:500;">Weekly Top 10</span>
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="padding-top:4px;">
+                  <span style="font-size:14px;color:#A1A1AA;">{{ date_range }}</span>
+                  <span style="color:#3F3F46;margin:0 8px;">|</span>
+                  <span style="font-size:14px;color:#A1A1AA;">{{ item_count }} signals</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ============ INTRO ============ -->
+        <tr>
+          <td style="padding:24px 32px 8px 32px;">
+            <p style="font-size:15px;color:#52525b;line-height:1.6;margin:0;">
+              Here are this week's highest-scoring demand signals from Hacker News, Product Hunt, and IndieHackers. Each opportunity is AI-scored on pain level, payment signal, executability, and reach.
+            </p>
+          </td>
+        </tr>
+
+        <!-- ============ CARDS ============ -->
+        {% for item in items %}
+        <tr>
+          <td style="padding:16px 24px;">
+            <!-- Card -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fafafb;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;">
+
+              <!-- Card Header -->
+              <tr>
+                <td style="background-color:#16161A;padding:16px 20px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="vertical-align:middle;">
+                        <!-- Rank badge -->
+                        <span style="display:inline-block;background-color:#6366F1;color:#ffffff;font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-right:10px;">#{{ loop.index }}</span>
+                        <!-- Title -->
+                        <a href="{{ item.raw.url }}" target="_blank" style="font-size:16px;font-weight:600;color:#FAFAFA;text-decoration:none;line-height:1.4;">{{ item.raw.title }}</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-top:8px;">
+                        <!-- Source badge -->
+                        {% if item.raw.source == 'hn' %}
+                        <span style="display:inline-block;background-color:rgba(251,146,60,0.15);color:#fb923c;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:8px;text-transform:uppercase;">HN</span>
+                        {% elif item.raw.source == 'producthunt' %}
+                        <span style="display:inline-block;background-color:rgba(248,113,113,0.15);color:#f87171;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:8px;text-transform:uppercase;">Product Hunt</span>
+                        {% elif item.raw.source == 'indiehackers' %}
+                        <span style="display:inline-block;background-color:rgba(96,165,250,0.15);color:#60a5fa;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:8px;text-transform:uppercase;">IndieHackers</span>
+                        {% else %}
+                        <span style="display:inline-block;background-color:rgba(161,161,170,0.15);color:#a1a1aa;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:8px;text-transform:uppercase;">{{ item.raw.source }}</span>
+                        {% endif %}
+                        <!-- Upvotes -->
+                        <span style="font-size:12px;color:#A1A1AA;margin-right:12px;">&#9650; {{ item.raw.score }}</span>
+                        <!-- Comments -->
+                        <span style="font-size:12px;color:#A1A1AA;">&#128172; {{ item.raw.comments }}</span>
+                        <!-- Commercial score -->
+                        <span style="display:inline-block;background-color:rgba(52,211,153,0.15);color:#34d399;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:12px;">Score: {{ item.commercial_score }}/10</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Card Body -->
+              <tr>
+                <td style="padding:20px;">
+
+                  <!-- 1. Pain Point / 痛点 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Pain Point / 痛点</p>
+                        <p style="font-size:14px;color:#27272a;line-height:1.5;margin:0 0 2px 0;">{{ item.demand_summary }}</p>
+                        <p style="font-size:13px;color:#71717a;line-height:1.5;margin:0;">{{ item.demand_summary_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 2. Target User / 目标用户 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Target User / 目标用户</p>
+                        <p style="font-size:14px;color:#27272a;line-height:1.5;margin:0 0 2px 0;">{{ item.target_user }}</p>
+                        <p style="font-size:13px;color:#71717a;line-height:1.5;margin:0;">{{ item.target_user_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 3. Product Idea / 产品构想 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td style="background-color:#f0eeff;border-left:3px solid #6366F1;padding:10px 14px;border-radius:0 6px 6px 0;">
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Product Idea / 产品构想</p>
+                        <p style="font-size:14px;color:#27272a;line-height:1.5;margin:0 0 2px 0;">{{ item.product_idea }}</p>
+                        <p style="font-size:13px;color:#71717a;line-height:1.5;margin:0;">{{ item.product_idea_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 4. Score Breakdown / 评分明细 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px 0;">Score Breakdown / 评分明细</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <!-- Pain Level -->
+                        <span style="display:inline-block;background-color:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;margin:0 6px 6px 0;">
+                          Pain 痛感 {{ item.score_detail.pain_level | default(0) }}/3
+                        </span>
+                        <!-- Payment Signal -->
+                        <span style="display:inline-block;background-color:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;margin:0 6px 6px 0;">
+                          Pay 付费 {{ item.score_detail.payment_signal | default(0) }}/3
+                        </span>
+                        <!-- Executability -->
+                        <span style="display:inline-block;background-color:#eff6ff;border:1px solid #bfdbfe;color:#2563eb;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;margin:0 6px 6px 0;">
+                          Exec 可行 {{ item.score_detail.executability | default(0) }}/2
+                        </span>
+                        <!-- Reach -->
+                        <span style="display:inline-block;background-color:#fefce8;border:1px solid #fde68a;color:#ca8a04;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;margin:0 6px 6px 0;">
+                          Reach 传播 {{ item.score_detail.reach | default(0) }}/2
+                        </span>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 5. Score Reason / 评分理由 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Score Reason / 评分理由</p>
+                        <p style="font-size:13px;color:#3f3f46;line-height:1.5;margin:0 0 2px 0;">{{ item.score_reason }}</p>
+                        <p style="font-size:12px;color:#71717a;line-height:1.5;margin:0;">{{ item.score_reason_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Divider -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td style="border-top:1px dashed #e4e4e7;font-size:0;line-height:0;">&nbsp;</td>
+                    </tr>
+                  </table>
+
+                  <!-- 6. Build Time / 开发周期 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Build Time / 开发周期</p>
+                        <p style="font-size:14px;color:#27272a;line-height:1.5;margin:0 0 2px 0;">{{ item.build_days }}</p>
+                        <p style="font-size:13px;color:#71717a;line-height:1.5;margin:0;">{{ item.build_days_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 7. Tool Plan / 工具方案 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px 0;">Tool Plan / 工具方案</p>
+                        <!-- EN tool table -->
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e4e4e7;border-radius:6px;overflow:hidden;margin-bottom:6px;">
+                          <tr>
+                            <td style="background-color:#f4f4f5;padding:6px 12px;font-size:11px;font-weight:700;color:#52525b;border-bottom:1px solid #e4e4e7;width:30%;">Tool</td>
+                            <td style="background-color:#f4f4f5;padding:6px 12px;font-size:11px;font-weight:700;color:#52525b;border-bottom:1px solid #e4e4e7;">Role</td>
+                          </tr>
+                          {% for t in item.tool_plan %}
+                          <tr>
+                            <td style="padding:5px 12px;font-size:13px;color:#27272a;border-bottom:1px solid #f4f4f5;font-weight:600;">{{ t.tool }}</td>
+                            <td style="padding:5px 12px;font-size:13px;color:#3f3f46;border-bottom:1px solid #f4f4f5;">{{ t.role }}</td>
+                          </tr>
+                          {% endfor %}
+                        </table>
+                        <!-- ZH tool table -->
+                        {% if item.tool_plan_zh %}
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e4e4e7;border-radius:6px;overflow:hidden;">
+                          <tr>
+                            <td style="background-color:#f4f4f5;padding:6px 12px;font-size:11px;font-weight:700;color:#71717a;border-bottom:1px solid #e4e4e7;width:30%;">工具</td>
+                            <td style="background-color:#f4f4f5;padding:6px 12px;font-size:11px;font-weight:700;color:#71717a;border-bottom:1px solid #e4e4e7;">职责</td>
+                          </tr>
+                          {% for t in item.tool_plan_zh %}
+                          <tr>
+                            <td style="padding:5px 12px;font-size:12px;color:#71717a;border-bottom:1px solid #f4f4f5;font-weight:600;">{{ t.tool }}</td>
+                            <td style="padding:5px 12px;font-size:12px;color:#71717a;border-bottom:1px solid #f4f4f5;">{{ t.role }}</td>
+                          </tr>
+                          {% endfor %}
+                        </table>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 8. Cost / 成本 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                    <tr>
+                      <td>
+                        <p style="font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Cost / 成本</p>
+                        <p style="font-size:14px;color:#27272a;line-height:1.5;margin:0 0 2px 0;">{{ item.cost_estimate }}</p>
+                        <p style="font-size:13px;color:#71717a;line-height:1.5;margin:0;">{{ item.cost_estimate_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- 9. Biggest Risk / 最大风险 -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="background-color:#fef2f2;border-left:3px solid #f87171;padding:10px 14px;border-radius:0 6px 6px 0;">
+                        <p style="font-size:12px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 4px 0;">Biggest Risk / 最大风险</p>
+                        <p style="font-size:13px;color:#7f1d1d;line-height:1.5;margin:0 0 2px 0;">{{ item.biggest_risk }}</p>
+                        <p style="font-size:12px;color:#991b1b;line-height:1.5;margin:0;opacity:0.8;">{{ item.biggest_risk_zh }}</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+            </table>
+            <!-- End Card -->
+          </td>
+        </tr>
+        {% endfor %}
+
+        <!-- ============ FOOTER ============ -->
+        <tr>
+          <td style="background-color:#09090B;padding:32px;text-align:center;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" style="padding-bottom:16px;">
+                  <span style="font-size:16px;font-weight:600;color:#FAFAFA;">Demand Radar</span>
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="padding-bottom:16px;">
+                  <p style="font-size:13px;color:#A1A1AA;line-height:1.6;margin:0;">
+                    You're receiving this because you're a Demand Radar Pro subscriber.
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="padding-bottom:8px;">
+                  <span style="font-size:13px;color:#71717a;">
+                    <a href="mailto:xiongmaopan7@gmail.com" style="color:#818CF8;text-decoration:none;">xiongmaopan7@gmail.com</a>
+                    <span style="color:#3F3F46;margin:0 8px;">|</span>
+                    <a href="https://x.com/xiongmaopan7" target="_blank" style="color:#818CF8;text-decoration:none;">X: @xiongmaopan7</a>
+                    <span style="color:#3F3F46;margin:0 8px;">|</span>
+                    <a href="https://t.me/alpha_pans" target="_blank" style="color:#818CF8;text-decoration:none;">Telegram: @alpha_pans</a>
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+      <!-- End Main container -->
+
+    </td>
+  </tr>
+</table>
+<!-- End Outer wrapper -->
+
+</body>
+</html>
