@@ -20,6 +20,7 @@ from database import Session as DBSession
 from database import User, init_db, get_session_factory
 from pipeline import run_pipeline_sync, run_pipeline
 from storage import get_demands_by_date, get_available_dates
+from newsletter import send_weekly_newsletter
 
 # Global session factory, initialized on startup
 SessionFactory = None
@@ -55,8 +56,12 @@ async def lifespan(app: FastAPI):
         run_pipeline_sync, "cron", hour=6, minute=0,
         args=[SessionFactory], id="daily_scrape",
     )
+    scheduler.add_job(
+        send_weekly_newsletter, "cron", day_of_week="fri", hour=6, minute=0,
+        args=[SessionFactory], id="weekly_newsletter",
+    )
     scheduler.start()
-    print("[app] Scheduler started (daily at 06:00 UTC)")
+    print("[app] Scheduler started (daily scrape 06:00 UTC, newsletter Fri 06:00 UTC)")
 
     yield
 
@@ -331,6 +336,14 @@ async def pipeline_status(request: Request):
     """Check pipeline status. Requires ADMIN_TOKEN."""
     _check_admin(request)
     return _pipeline_status
+
+
+@app.post("/admin/send-newsletter")
+async def trigger_newsletter(request: Request):
+    """Manual newsletter trigger. Requires ADMIN_TOKEN."""
+    _check_admin(request)
+    result = send_weekly_newsletter(SessionFactory)
+    return result
 
 
 if __name__ == "__main__":
