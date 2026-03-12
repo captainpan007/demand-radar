@@ -16,6 +16,15 @@ G2_DELAY_MAX = 4
 AI_STEP2_DELAY = 0.5
 AI_MIN_SCORE = 6  # 0-10 scale; items below 6 are filtered out
 
+# Pre-filter thresholds: skip low-engagement items before AI scoring to save API costs
+PRE_FILTER = {
+    "hn":           {"min_score": 5,  "min_comments": 2},
+    "producthunt":  {"min_score": 20, "min_comments": 0},
+    "indiehackers": {"min_score": 0,  "min_comments": 0},  # metadata unreliable, keep all
+    "reddit":       {"min_score": 3,  "min_comments": 1},
+    "g2":           {"min_score": 0,  "min_comments": 0},
+}
+
 AI_TOOLS = [
     {"name": "Claude Code", "specialty": "complex business logic, API integration, security-sensitive code, algorithms hard to describe in plain language", "best_for": "core backend logic, data processing pipelines, third-party service integration"},
     {"name": "Cursor", "specialty": "UI components, repetitive code, project scaffolding, multi-file edits", "best_for": "frontend interfaces, CRUD features, styling"},

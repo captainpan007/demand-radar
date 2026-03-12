@@ -5,7 +5,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
-from config import DEEPSEEK_API_KEY
+from config import DEEPSEEK_API_KEY, PRE_FILTER
 from processor.cleaner import clean, deduplicate
 from processor.ai_filter import filter_demands
 from processor.translator import translate_demands
@@ -106,6 +106,17 @@ async def run_pipeline(session_factory) -> dict:
             "saved": 0,
             "elapsed": round(elapsed, 1),
         }
+
+    # --- Stage 2.5: Pre-filter by engagement (save AI costs) ---
+    print("\n=== Pipeline Stage 2.5: Pre-filter by engagement ===")
+    before_prefilter = len(items)
+    filtered_items = []
+    for item in items:
+        thresholds = PRE_FILTER.get(item.source, {"min_score": 0, "min_comments": 0})
+        if item.score >= thresholds["min_score"] and item.comments >= thresholds["min_comments"]:
+            filtered_items.append(item)
+    items = filtered_items
+    print(f"  before: {before_prefilter}, after: {len(items)}, skipped: {before_prefilter - len(items)}")
 
     # --- Stage 3: AI Filtering ---
     print("\n=== Pipeline Stage 3: AI Filtering ===")
