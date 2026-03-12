@@ -4,7 +4,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from config import DEEPSEEK_API_KEY, MOONSHOT_API_KEY
+from config import DEEPSEEK_API_KEY
 from processor.cleaner import clean, deduplicate
 from processor.ai_filter import filter_demands
 from reporter.generator import generate_report
@@ -16,8 +16,6 @@ from scrapers.reddit import scrape_reddit
 
 
 async def run():
-    if not MOONSHOT_API_KEY:
-        print("[startup] MOONSHOT_API_KEY not set, AI filtering will be skipped")
     if not DEEPSEEK_API_KEY:
         print("[startup] DEEPSEEK_API_KEY not set, AI scoring will be skipped")
     start = time.perf_counter()
