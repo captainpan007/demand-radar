@@ -1,7 +1,7 @@
 """Storage layer: convert between DemandItem dataclass and DB Demand model."""
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import text
 
@@ -198,3 +198,31 @@ def search_demands(session, query: str, limit: int = 50) -> list[DemandItem]:
             .all()
         )
         return [_row_to_demand_item(r) for r in rows]
+
+
+def get_weekly_top_demands(session, end_date: date = None, top_n: int = 10) -> list[DemandItem]:
+    """Get top N demands from the past 7 days, ranked by commercial_score + pain_level + executability."""
+    if end_date is None:
+        end_date = date.today()
+    start_date = end_date - timedelta(days=6)
+
+    rows = (
+        session.query(Demand)
+        .filter(Demand.report_date >= start_date, Demand.report_date <= end_date)
+        .all()
+    )
+
+    items = [_row_to_demand_item(r) for r in rows]
+
+    def rank_score(item: DemandItem) -> int:
+        sd = item.score_detail or {}
+        pain = sd.get("pain_level", 0)
+        exe = sd.get("executability", 0)
+        if isinstance(pain, str):
+            pain = int(pain) if pain.isdigit() else 0
+        if isinstance(exe, str):
+            exe = int(exe) if exe.isdigit() else 0
+        return item.commercial_score + pain + exe
+
+    items.sort(key=rank_score, reverse=True)
+    return items[:top_n]
