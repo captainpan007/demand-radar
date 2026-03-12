@@ -49,6 +49,10 @@ BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 LEMON_SQUEEZY_SIGNING_SECRET = os.environ.get("LEMON_SQUEEZY_SIGNING_SECRET", "")
 LEMON_SQUEEZY_CHECKOUT_URL = os.environ.get("LEMON_SQUEEZY_CHECKOUT_URL", "")
 
+# Newsletter (Resend)
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+NEWSLETTER_FROM_EMAIL = os.environ.get("NEWSLETTER_FROM_EMAIL", "Demand Radar <newsletter@demand-radar.com>")
+
 # Access limits
 VISITOR_LIMIT = 3
 FREE_LIMIT = 5

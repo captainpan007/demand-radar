@@ -13,3 +13,4 @@ itsdangerous>=2.2,<3
 python-multipart>=0.0.18
 apscheduler>=3.10,<4
 python-dotenv>=1.0,<2
+resend>=2.0,<3
