@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     SessionFactory = get_session_factory(engine)
     print("[app] Database initialized")
 
-    scheduler = BackgroundScheduler()
+    scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(
         run_pipeline_sync, "cron", hour=6, minute=0,
         args=[SessionFactory], id="daily_scrape",

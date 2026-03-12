@@ -12,7 +12,10 @@ from storage import get_weekly_top_demands
 
 logger = logging.getLogger(__name__)
 
-_jinja_env = Environment(loader=FileSystemLoader("reporter"))
+_jinja_env = Environment(
+    loader=FileSystemLoader("reporter"),
+    autoescape=True,
+)
 
 
 def _get_pro_emails(session) -> list[str]:
